@@ -3,7 +3,7 @@ title: Canvas & HLS
 tags: Video Canvas
 ---
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Canvas & HLS</title>
+<title>Canvas & Video File</title>
 <style>
 	.inline {
 		display: inline-block;
@@ -31,7 +31,10 @@ window.addEventListener('load', async event => {
 	});
 
 	let src1 = video.appendChild(document.createElement('source'))
-	src1.src = '../../common_assets/media/BipBop/prog_index.m3u8';
+	src1.src = 'BipBop.mp4';
+
+	let src2 = video.appendChild(document.createElement('source'))
+	src2.src = 'BipBop.webm';
 
 	startPaintingWithRVFC();
 
