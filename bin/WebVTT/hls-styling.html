@@ -1,0 +1,38 @@
+---
+title: WebVTT & HLS
+tags: Subtitles Video
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas & HLS</title>
+<style>
+	video {
+		border: 1px solid black;
+		max-width: 100%;
+	}
+</style>
+<script>
+window.addEventListener('load', async event => { 
+	let video = document.querySelector('video');
+	video.muted = true;
+	video.playsInline = true;
+
+	video.addEventListener('resize', event => {
+		document.querySelectorAll('canvas').forEach(canvas => {
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+		})
+	});
+
+	let src1 = video.appendChild(document.createElement('source'));
+	src1.src = '../../common_assets/media/BipBop/styled_subtitles.m3u8';
+
+	video.load();
+
+});
+
+</script>
+</head>
+<body>
+<div>
+	<video controls></video>
+</div>
