@@ -1,0 +1,64 @@
+---
+title: Canvas & HLS
+tags: Video Canvas
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>requestVideoFrameCallback</title>
+<style>
+	.inline {
+		display: inline-block;
+		vertical-align: top;
+		max-width: calc(33% - 10px);
+	}
+	video, canvas {
+		border: 1px solid black;
+		max-width: 100%;
+		min-width: 150px;
+		min-height: 100px;
+	}
+</style>
+<script>
+window.addEventListener('load', async event => { 
+	let video = document.querySelector('video');
+	video.muted = true;
+	video.playsInline = true;
+
+	video.addEventListener('resize', event => {
+		document.querySelectorAll('canvas').forEach(canvas => {
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+		})
+	});
+
+	let src1 = video.appendChild(document.createElement('source'))
+	src1.src = '../../common_assets/media/BipBop/prog_index.m3u8';
+
+	startPaintingWithRVFC();
+
+	video.load();
+
+});
+
+function startPaintingWithRVFC() {
+	let video = document.querySelector('video');
+	let paint = () => {
+		let canvas = document.querySelector('#rVFC');
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        video.requestVideoFrameCallback(paint);
+	};
+	video.requestVideoFrameCallback(paint);
+}
+</script>
+</head>
+<body>
+<div>
+	<div class="inline">
+		<span>Video:</span><br>
+		<video controls></video>
+	</div>
+	<div class="inline">
+		<span>requestVideoFrameCallback + Canvas:</span><br>
+		<canvas id="rVFC"></canvas>
+	</div>
+</div>
