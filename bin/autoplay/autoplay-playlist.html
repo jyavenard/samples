@@ -1,0 +1,63 @@
+---
+title: Autoplay Playlist
+tags: Video Autoplay
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas & Video Blob</title>
+<style>
+	.inline {
+		display: inline-block;
+		vertical-align: top;
+		max-width: calc(25% - 10px);
+	}
+	video, canvas {
+		border: 1px solid black;
+		max-width: 100%;
+		min-width: 150px;
+		min-height: 100px;
+	}
+</style>
+<script>
+	window.addEventListener('load', event => {
+		let goButton = document.querySelector('#go');
+		goButton.addEventListener('click', event => {
+			let videos = document.querySelectorAll('video');
+			videos.forEach(video => {
+				video.load();
+			});
+			loadAndPlayNextVideo();
+		});
+	});
+
+	function loadAndPlayNextVideo() {
+		let videos = document.querySelectorAll('video');
+		let currentIndex = null;
+		videos.forEach((video, index) => {
+			if (!video.src)
+				return;
+			currentIndex = index;
+		});
+
+		let nextIndex = 0;
+		if (currentIndex !== null) {
+			nextIndex = currentIndex + 1;
+			videos[currentIndex].src = '';
+			videos[currentIndex].load();
+		}
+
+		if (nextIndex == videos.length)
+			nextIndex = 0;
+
+		let nextVideo = videos[nextIndex];
+		nextVideo.src = '../../common_assets/media/BipBop/prog_index.m3u8';
+		nextVideo.play();
+		nextVideo.addEventListener('ended', loadAndPlayNextVideo, {once: true});
+	}
+</script>
+<button id=go>Go</button>
+<div>
+	<div class=inline><video></video></div>
+	<div class=inline><video></video></div>
+	<div class=inline><video></video></div>
+	<div class=inline><video></video></div>
+</div>
