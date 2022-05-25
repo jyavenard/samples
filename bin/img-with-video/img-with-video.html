@@ -1,0 +1,21 @@
+---
+title: <img> with video
+tags: Image Video
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;img&gt; with video</title>
+<style>
+	img {
+		border: 1px solid black;
+		max-width: 100%;
+	}
+</style>
+</head>
+<body>
+<div>
+	<picture>
+	  <source srcset="../../common_assets/media/BipBop.mp4" type="video/mp4">
+	  <source srcset="../../common_assets/media/BipBop.webm" type="video/webm">
+	  <img src="../../common_assets/media/BipBop.mp4">
+	</picture>
+</div>
