@@ -2,22 +2,11 @@ WEBVTT
 X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000
 
 STYLE
-::cue(.transparent) { font-size: 200%; color: red; background-color: blue; }
+::cue { background-color: transparent !important; }
+::cue(.transparent) { text-shadow: #000 1px 0 10px; color: white; font-size: 200%; }
 
-00:00:00.000 --> 00:00:01.000
-00:00 to 00:01 -- <c.transparent>WATERMARK</c>
+00:00:00.000 --> 00:00:03.000 line:1 align:center
+<c.transparent>WATERMARK</c>
 
-00:00:01.000 --> 00:00:02.000
-00:01 to 00:02 -- <b>BOLD WATERMARK</b>
-
-00:00:02.000 --> 00:00:03.000
-00:02 to 00:03 sec -- <i>RED WATERMARK</i>
-
-00:00:03.000 --> 00:00:04.000
-00:03 to 00:04 sec -- <u>YELLOW WATERMARK</u>
-
-00:00:04.000 --> 00:00:05.000
-00:04 to 00:05 sec -- <c.yellow.bg_blue>This is yellow text on a blue background</c>
-
-00:00:05.000 --> 00:00:06.000
-00:05 to 00:06 sec -- <c.magenta.bg_black>This is magenta text on a black background</c>
+00:00:03.000 --> 00:00:06.000 line:10 align:right
+<c.transparent>WATERMARK</c>

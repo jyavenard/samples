@@ -1,0 +1,35 @@
+---
+title: Out-of-band Watermarks
+tags: Video Subtitles
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Out-of-band Watermarks</title>
+<style>
+	video {
+		border: 1px solid black;
+		max-width: 100%;
+		min-width: 150px;
+		min-height: 100px;
+	}
+</style>
+<script>
+	window.addEventListener('load', async event => {
+		let video = document.getElementById('video');
+		let src1 = video.appendChild(document.createElement('source'))
+		src1.src = '../../common_assets/media/BipBop.mp4';
+
+		let src2 = video.appendChild(document.createElement('source'));
+		src2.src = '../../common_assets/media/BipBop.webm';
+
+
+		let track = video.appendChild(document.createElement('track'));
+		track.src = '../../common_assets/media/BipBop/watermark.webvtt';
+		track.kind = 'forced';
+		track.track.mode = 'showing';
+	});
+</script>
+</head>
+<body>
+<div>
+	<video id="video" controls></video>
+</div>
