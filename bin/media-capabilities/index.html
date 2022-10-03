@@ -1,0 +1,140 @@
+---
+title: decodingInfo()
+tags: MediaCapabilities
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>decodingInfo()</title>
+<style>
+	input[type=text], input[type=number] { width: 300px; }
+</style>
+<script>
+	window.addEventListener('load', async event => {
+		for (checkbox of document.querySelectorAll('input[type="checkbox"]')) {
+			let forAttribute = checkbox.getAttribute('for');
+			if (!forAttribute)
+				continue;
+			let whatFor = document.querySelector(`#${forAttribute}`);
+			if (!whatFor)
+				continue;
+			whatFor.disabled = !checkbox.checked;
+			checkbox.addEventListener('change', event => {
+				whatFor.disabled = !event.target.checked;
+			});
+		}
+
+		check.addEventListener('click', async event => {
+			results.innerHTML = '';
+			let configuration = {};
+			configuration.type = document.querySelector('#decoding-type').value;
+			if (document.querySelector('#enable-audio').checked) {
+				let audioConfiguration = {};
+				if (document.querySelector('#enable-audio-content-type').checked)
+					audioConfiguration.contentType = document.querySelector('#audio-content-type').value;
+				if (document.querySelector('#enable-audio-channels').checked)
+					audioConfiguration.channels = document.querySelector('#audio-channels').value;
+				if (document.querySelector('#enable-audio-bitrate').checked)
+					audioConfiguration.bitrate = document.querySelector('#audio-bitrate').value;
+				if (document.querySelector('#enable-audio-sample-rate').checked)
+					audioConfiguration.samplerate = document.querySelector('#audio-sample-rate').value;
+				if (document.querySelector('#enable-audio-spatial-rendering').checked)
+					audioConfiguration.spatialRendering = document.querySelector('#audio-spatial-rendering').checked;
+				configuration.audio = audioConfiguration;
+			}
+
+			if (document.querySelector('#enable-video').checked) {
+				let videoConfiguration = {};
+				if (document.querySelector('#enable-video-content-type').checked)
+					videoConfiguration.contentType = document.querySelector('#video-content-type').value;
+				if (document.querySelector('#enable-video-width').checked)
+					videoConfiguration.width = document.querySelector('#video-width').value;
+				if (document.querySelector('#enable-video-height').checked)
+					videoConfiguration.height = document.querySelector('#video-height').value;
+				if (document.querySelector('#enable-video-bitrate').checked)
+					videoConfiguration.bitrate = document.querySelector('#video-bitrate').value;
+				if (document.querySelector('#enable-video-framerate').checked)
+					videoConfiguration.framerate = document.querySelector('#video-framerate').value;
+				configuration.video = videoConfiguration;
+			}
+
+			try {
+				results.appendChild(document.createElement('div')).innerText = `configuration = ${ JSON.stringify(configuration, null, '\t') }`;
+				let info = await navigator.mediaCapabilities.decodingInfo(configuration);
+				results.appendChild(document.createElement('div')).innerText = `mediaCapabilities.decodingInfo(configuration) succeeded: ${ JSON.stringify(info, null, '\t') }`;
+			} catch(e) {
+				results.appendChild(document.createElement('div')).innerText = `mediaCapabilities.decodingInfo(configuration) failed with exception: ${ e }`;
+			}
+		});
+	});
+</script>
+</head>
+<body>
+<div>
+	<label for="decoding-type">Decoding Type</label>
+	<select id="decoding-type" name="decoding-type">
+		<option value="file">File</option>
+		<option value="media-source">Media Source</option>
+	</select>
+
+	<div id="audio-configuration">
+		<input type="checkbox" id="enable-audio" name="enable-audio" checked>
+		<label for="enable-audio">Audio Configuration</label>
+		<br>
+		<input type="checkbox" id="enable-audio-content-type" name="enable-audio-content-type" for="audio-content-type" checked disabled>
+		<input type="text" id="audio-content-type" name="audio-content-type" list="audio-content-type-list">
+		<label for="audio-content-type">Content Type</label>
+		<datalist id="audio-content-type-list">
+			<option value="audio/mp4; codecs=mp4a.40.2">AAC-LC</option>
+			<option value="audio/mp4; codecs=mp4a.40.5">HE-AAC</option>
+			<option value="audio/webm;codecs=opus">WebM Opus</option>
+		</datalist>
+		<br>
+		<input type="checkbox" id="enable-audio-channels" name="enable-audio-channels" for="audio-channels">
+		<input type="text" id="audio-channels" name="audio-channels">
+		<label for="audio-channels">Channels</label>
+		<br>
+		<input type="checkbox" id="enable-audio-bitrate" name="enable-audio-bitrate" for="audio-bitrate">
+		<input type="number" id="audio-bitrate" name="audio-bitrate">
+		<label for="audio-bitrate">Bitrate</label>
+		<br>
+		<input type="checkbox" id="enable-audio-sample-rate" name="enable-audio-sample-rate" for="audio-sample-rate">
+		<input type="number" id="audio-sample-rate" name="audio-sample-rate">
+		<label for="audio-sample-rate">Sample Rate</label>
+		<br>
+		<input type="checkbox" id="enable-audio-spatial-rendering" name="enable-audio-spatial-rendering" for="audio-spatial-rendering">
+		<input type="checkbox" id="audio-spatial-rendering" name="audio-spatial-rendering">
+		<label for="audio-spatial-rendering">Spatial Rendering</label>
+	</div>
+
+	<div id="video-configuration">
+		<input type="checkbox" id="enable-video" name="enable-video">
+		<label for="enable-video">Video Configuration</label>
+		<br>
+		<input type="checkbox" id="enable-video-content-type" name="enable-video-content-type" for="video-content-type" checked disabled>
+		<input type="text" id="video-content-type" name="video-content-type"  list="video-content-type-list">
+		<label for="video-content-type">Content Type</label>
+		<datalist id="video-content-type-list">
+			<option value="video/mp4; codecs=avc1.4d002a">h.264 Main Profile, Level 4.2</option>
+			<option value="video/mp4; codecs=av01.0.01M.08">AV1 Main Profile, level 2.1, Main tier, 8-bit</option>
+		</datalist>
+		<br>
+		<input type="checkbox" id="enable-video-width" name="enable-video-width" for="video-width" checked disabled>
+		<input type="number" id="video-width" name="video-width" value=320 disabled>
+		<label for="video-width">Width</label>
+		<br>
+		<input type="checkbox" id="enable-video-height" name="enable-video-height" for="video-height" checked disabled>
+		<input type="number" id="video-height" name="video-height" value=240 disabled>
+		<label for="video-height">Height</label>
+		<br>
+		<input type="checkbox" id="enable-video-bitrate" name="enable-video-bitrate" for="video-bitrate" checked disabled>
+		<input type="number" id="video-bitrate" name="video-bitrate" value=1000 disabled>
+		<label for="video-bitrate">Bitrate</label>
+		<br>
+		<input type="checkbox" id="enable-video-framerate" name="enable-video-framerate" for="video-framerate" checked disabled>
+		<input type="number" id="video-framerate" name="video-framerate" value=30 disabled>
+		<label for="video-framerate">Frame Rate</label>
+	</div>
+
+<div>
+	<button id="check">Check</button>
+	<pre id="results"></pre>
+</div>
