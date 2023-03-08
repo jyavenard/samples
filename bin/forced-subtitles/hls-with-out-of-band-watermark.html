@@ -15,15 +15,25 @@ tags: Video Subtitles
 <script>
 	window.addEventListener('load', async event => {
 		let video = document.getElementById('video');
-		for (let track of video.textTracks) {
-			if (track.kind === 'forced')
-				track.mode = 'showing';
-		}
+			let enableForcedTracks = () => {
+				for (track of video.textTracks) {
+					if (track.kind !== 'forced')
+						continue;
 
-		video.textTracks.addEventListener('addtrack', async event => {
-			if (event.track.kind === 'forced')
-				event.track.mode = 'showing';
-		});
+					if (track.mode !== 'showing') {
+						track.mode = 'showing'
+						continue;
+					}
+
+					if (!track.activeCues) {
+						track.mode = 'hidden';
+						track.mode = 'showing';
+					}
+				}
+			};
+			video.textTracks.addEventListener('change', enableForcedTracks);
+			video.textTracks.addEventListener('addtrack', enableForcedTracks);
+			enableForcedTracks();
 	});
 </script>
 </head>
