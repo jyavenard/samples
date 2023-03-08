@@ -15,21 +15,36 @@ tags: Video Subtitles
 <script>
 	window.addEventListener('load', async event => {
 		let video = document.getElementById('video');
-		let src1 = video.appendChild(document.createElement('source'))
-		src1.src = '../../common_assets/media/BipBop.mp4';
 
-		let src2 = video.appendChild(document.createElement('source'));
-		src2.src = '../../common_assets/media/BipBop.webm';
+		let enableForcedTracks = () => {
+			for (track of video.textTracks) {
+				if (track.kind !== 'forced')
+					continue;
 
+				if (track.mode !== 'showing') {
+					track.mode = 'showing'
+					continue;
+				}
 
-		let track = video.appendChild(document.createElement('track'));
-		track.src = '../../common_assets/media/BipBop/watermark.webvtt';
-		track.kind = 'forced';
-		track.track.mode = 'showing';
+				if (!track.activeCues) {
+					track.mode = 'hidden';
+					track.mode = 'showing';
+				}
+			}
+		};
+		video.textTracks.addEventListener('change', enableForcedTracks);
+		video.textTracks.addEventListener('addtrack', enableForcedTracks);
+		enableForcedTracks();
+
 	});
 </script>
 </head>
 <body>
 <div>
-	<video id="video" controls></video>
+	<video id="video" controls>
+		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4">
+		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
+ 		<track kind="forced" default src="../../common_assets/media/BipBop/watermark.webvtt">
+ 		<track kind="subtitles" lang="en-US" src="../../common_assets/media/BipBop/flieSequence0_css.webvtt">
+	</video>
 </div>
