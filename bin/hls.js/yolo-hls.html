@@ -2,21 +2,13 @@
 title: HLS.js YOLO Demo
 tags: Video HLS
 ---
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Canvas & Video Blob</title>
-<style>
-  html, body { margin:0, padding:0, background-color: }
-  body {
-    background-color: rgb(38, 38, 38);
-  }
-  video { width: 100%; max-height: 100% }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YOLO HLS.js Demo</title>
+<link rel="stylesheet" type="text/css" href="hls.css">
   <body>
     <script src="hls.js"></script>
 
-    <center>
-      <video id="video" controls></video>
-    </center>
+    <video id="video" controls></video>
 
     <script>
       var video = document.getElementById('video');
