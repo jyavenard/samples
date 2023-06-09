@@ -603,7 +603,7 @@ class HandlerReferenceBox extends FullBox {
         // unsigned int(32)[3] reserved = 0;
         reader.skip(12);
 
-        var remaining = this.size - headerOffset;
+        var remaining = this.size - reader.offset;
         this.name = reader.readString(remaining);
 
         return reader.offset;
@@ -1215,7 +1215,7 @@ class AVCConfigurationBox extends Atom {
             }
         }
 
-        return headerOffset;
+        return reader.offset;
     };
 };
 
@@ -1326,7 +1326,7 @@ class CleanApertureBox extends Atom {
         this.horizOffD = reader.readUint32();
         this.vertOffN = reader.readUint32();
         this.vertOffD = reader.readUint32();
-        return headerOffset;
+        return reader.offset;
     };
 };
 
@@ -1355,7 +1355,7 @@ class TrackExtendsAtom extends FullBox {
         this.default_sample_duration = reader.readUint32();
         this.default_sample_size = reader.readUint32();
         this.default_sample_flags = reader.readUint32();
-        return headerOffset;
+        return reader.offset;
     };
 };
 
@@ -1843,7 +1843,7 @@ class ColorBox extends Atom {
             this.fullRangeFlag = reader.readUint8() & 0xF
         }
 
-        return headerOffset;
+        return reader.offset;
     }
 }
 
