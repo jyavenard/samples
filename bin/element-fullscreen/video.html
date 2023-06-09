@@ -50,7 +50,27 @@ tags: Video Fullscreen
     .video-container .video-controls .button:active {
         transform: scale(1.1);
     }
-    .video-container .video-controls .timeline { flex-grow: 1; }
+    .video-container .video-controls .timeline {
+        flex-grow: 1;
+        -webkit-appearance: none;
+    }
+    .video-container .video-controls .timeline::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 0.5em;
+        cursor: pointer;
+        background: darkgrey;
+    }
+
+    .video-container .video-controls .timeline::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 1em;
+        margin-top: -0.25em;
+        width: 0.25em;
+        background: white;
+        cursor: pointer;
+    }
+
+
     .video-container .video-controls .button {
         width: 1em;
         height: 1em;
