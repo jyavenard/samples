@@ -1036,17 +1036,17 @@ class DecoderConfigDescriptor extends BaseDescriptor {
 
         this.objectTypeIndication = reader.readUint8();
 
-        var nextByte = reader.Uint8();
+        var nextByte = reader.readUint8();
         this.streamType = (nextByte >> 2) & 0x3f;
         this.upStream = nextByte & 0x2;
         this.specificInfoFlag = nextByte & 0x1;
 
-        var next4Bytes = reader.Uint32();
+        var next4Bytes = reader.readUint32();
         this.bufferSizeDB = (next4Bytes >> 8) & 0xFFFFFF
 
-        this.maxBitrate = reader.Uint32();
+        this.maxBitrate = reader.readUint32();
 
-        this.avgBitrate = reader.Uint32();
+        this.avgBitrate = reader.readUint32();
 
         while (this.specificInfoFlag && headerOffset < this.size) {
             var specificInfo = new DecoderSpecificInfo(this);
