@@ -16793,7 +16793,10 @@
         ms.addEventListener('startstreaming', this._onStartStreaming);
         ms.addEventListener('endstreaming', this._onEndStreaming);
         // link video and media Source
-        media.src = self.URL.createObjectURL(ms);
+        let source1 = media.appendChild(document.createElement('source'));
+        source1.src = self.URL.createObjectURL(ms);
+        let source2 = media.appendChild(document.createElement('source'));
+        source2.src = this.hls.url;
         // cache the locally generated object url
         this._objectUrl = media.src;
         media.addEventListener('emptied', this._onMediaEmptied);
@@ -16836,6 +16839,9 @@
           // hijack the video tag and change its 'src' without destroying the Hls instance first
           if (media.src === _objectUrl) {
             media.removeAttribute('src');
+            while (media.firstChild) {
+              media.removeChild(media.firstChild);
+            }
             media.load();
           } else {
             logger.warn('[buffer-controller]: media.src was changed by a third party - skip cleanup');
