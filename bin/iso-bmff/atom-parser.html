@@ -1,0 +1,154 @@
+---
+title: "ISO-BMFF Atom Parser"
+tags: Video Formats
+---
+<head>
+    <title>AtomParser</title>
+    <script src=atom.js></script>
+    <script>
+        // Add Blob.prototype.slice if it does not already exist:
+        if (typeof(Blob.prototype.slice) == 'undefined' && typeof(Blob.prototype.webkitSlice) != 'undefined')
+            Blob.prototype.slice = Blob.prototype.webkitSlice;
+
+        var moovAtom;
+        function onFileSelect(e) {
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            output.innerHTML = '';
+
+            function checkForAtom(offset) {
+                reader.onload = function(e) {
+                    var atom = new Atom();
+                    if (atom) {
+                        atom.parse(e.target.result, 0);
+                        readAtom(offset, atom.size);
+                    }
+                };
+                var subset = file.slice(offset, offset + 36);
+                reader.readAsArrayBuffer(subset);
+            }
+
+            function readAtom(offset, length) {
+                reader.onload = function(e) {
+                    atom = Atom.create(e.target.result);
+                    if (!atom)
+                        return;
+                    var output = document.getElementById('output');
+                    output.appendChild(toDOMNode(atom));
+                    if (file.size > offset + length)
+                        checkForAtom(offset + length);
+                };
+                var subset = file.slice(offset, offset + length);
+                reader.readAsArrayBuffer(subset);
+            }
+
+            checkForAtom(0);
+        }
+        function toDOMRepresentation(object)
+        {
+            if (object instanceof Atom)
+                return toDOMNode(object);
+            else if (object instanceof Array || object instanceof Uint32Array)  {
+                var span = document.createElement('span');
+                span.appendChild(document.createTextNode('['));
+                for (var i = 0; i < object.length; ++i) {
+                    span.appendChild(toDOMRepresentation(object[i]));
+                    if (i + 1 < object.length)
+                        span.appendChild(document.createTextNode(', '));
+                }
+                span.appendChild(document.createTextNode(']'));
+                return span;
+            }
+            else if (typeof(object) == "string")
+                return document.createTextNode('"' + object + '"');
+            else if (object instanceof Date)
+                return document.createTextNode(object.toLocaleString());
+            else if (object instanceof Uint8Array) {
+                return Uint8ArrayNode(object);
+            } else if (object instanceof Object)
+                return toDOMNode(object);
+            else if (object === null)
+				return document.createTextNode('[null]');
+			else
+                return document.createTextNode(object.toString());
+        }
+
+        function toDOMNode(object)
+        {
+            var output = document.createElement('dl');
+
+            if (typeof(object.description) == 'string') {
+                var div = document.createElement('div');
+                div.classList.add('description');
+                div.appendChild(document.createTextNode(object.description));
+                output.appendChild(div);
+            }
+
+            for (property in object) {
+                var value = object[property];
+                if (typeof(value) == 'function')
+                    continue;
+                var div = document.createElement('div');
+                var dt = document.createElement('dt');
+                dt.appendChild(document.createTextNode(property + ': '));
+                var dd = document.createElement('dd');
+                dd.appendChild(toDOMRepresentation(value));
+                div.appendChild(dt);
+                div.appendChild(dd);
+                output.appendChild(div);
+            }
+            return output;
+        }
+
+        function Uint8ArrayNode(array)
+        {
+            var table = document.createElement('table');
+            var width = 16;
+            for (var offset = 0; offset <= array.length; offset += width) {
+                var tr = document.createElement('tr');
+                table.appendChild(tr);
+
+                var th = document.createElement('th');
+                tr.appendChild(th);
+                th.innerText = ('0000000' + offset.toString(16)).substr(-8) + ':';
+
+                for (var column = 0; column < width && offset + column < array.length; column += 2) {
+                    var td = document.createElement('td');
+                    tr.appendChild(td);
+                    td.innerText = ('00' + array[offset + column].toString(16)).substr(-2);
+                    if (offset + column + 1 < array.length)
+                        td.innerText += ('00' + array[offset + column + 1].toString(16)).substr(-2);
+                }
+            }
+            return table;
+        }
+
+        function setup() {
+            document.getElementById('file').addEventListener('change', onFileSelect, false);
+        }
+    </script>
+    <style>
+        dl { border: 1px solid black; padding: 1px; }
+        dt, dd { display: inline; }
+        /*dt:after { content:": " }*/
+        dd:after { content:"\A"; white-space:pre; }
+        dd dl { margin: 0; vertical-align: top }
+        dd span { display: inline-block; vertical-align: top; }
+
+        dt, dd { display: inline-block; min-width: 14em; }
+        dd { margin-left: 1em; }
+        dd th { font-weight: normal; text-align: right; }
+        .description { text-align: center; font-weight: bold; }
+
+        /* make the output display as a table */
+        /*
+        dl { display: table; }
+        dl div { display: table-row; }
+        dt, dd { display: table-cell; }
+        */
+    </style>
+</head>
+<body id="atomtester" onload="setup()">
+    <input type="file" id="file" name="file" />
+    <div id=output>
+</body>
