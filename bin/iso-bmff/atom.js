@@ -295,6 +295,7 @@ class ContainerAtom extends Atom {
         Atom.constructorMap['edts'] = ContainerAtom.bind(null, 'Edit Box');
         Atom.constructorMap['schi'] = ContainerAtom.bind(null, 'Scheme Information Box');
         Atom.constructorMap['dinf'] = ContainerAtom.bind(null, 'Data Information Box');
+        Atom.constructorMap['udta'] = ContainerAtom.bind(null, 'User Data Box');
     }
 
     constructor(description, parent) {
@@ -572,6 +573,32 @@ class VideoMediaHeaderBox extends FullBox {
         this.opcolor[0] = reader.readInt16();
         this.opcolor[1] = reader.readInt16();
         this.opcolor[2] = reader.readInt16();
+
+        return reader.offset;
+    };
+}
+
+class SoundMediaHeaderBox extends FullBox {
+    static {
+        Atom.constructorMap['smhd'] = SoundMediaHeaderBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = 'Sound Media Header Box';
+        this.balance = 0;
+    };
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.balance = reader.readInt16();
+
+        // const unsigned int(16) reserved = 0;
+        reader.skip(2);
 
         return reader.offset;
     };
@@ -1909,5 +1936,174 @@ class DataReferenceBox extends FullBox {
         }
 
         return headerOffset;
+    }
+}
+
+class SampleToChunkBox extends FullBox {
+    static {
+        Atom.constructorMap['stsc'] = SampleToChunkBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+        this.description = "Sample to Chunk Box";
+        this.entryCount = 0;
+
+        Object.defineProperty(this, "dataEntries", {
+            value: null,
+            writable: true,
+            enumerable: false,
+            configurable: true,
+        });
+        this.dataEntries = [];
+    };
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.entryCount = reader.readUint32();
+
+        while (this.dataEntries.length < this.entryCount) {
+            let entry = {
+                firstChunk: reader.readUint32(),
+                samplesPerChunk: reader.readUint32(),
+                sampleDescriptionIndex: reader.readUint32(),
+            };
+            this.dataEntries.push(entry);
+        }
+
+        return reader.offset;
+    }
+}
+
+class ChunkOffsetBox extends FullBox {
+    static {
+        Atom.constructorMap['stco'] = ChunkOffsetBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+        this.description = "Chunk Offset Box";
+        this.entryCount = 0;
+
+        Object.defineProperty(this, "chunkOffsets", {
+            value: null,
+            writable: true,
+            enumerable: false,
+            configurable: true,
+        });
+        this.chunkOffsets = [];
+    };
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.entryCount = reader.readUint32();
+
+        while (this.chunkOffsets.length < this.entryCount)
+            this.chunkOffsets.push(reader.readUint32());
+
+        return reader.offset;
+    }
+}
+
+class SampleDependencyTypeBox extends FullBox {
+    static {
+        Atom.constructorMap['sdtp'] = SampleDependencyTypeBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+        this.description = "Independent and Disposable Samples Box";
+        this.entryCount = 0;
+
+        Object.defineProperty(this, "sampleDependencies", {
+            value: null,
+            writable: true,
+            enumerable: false,
+            configurable: true,
+        });
+        this.sampleDependencies = [];
+    };
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var array = new Uint8Array(buffer, offset + headerOffset, this.size - headerOffset);
+        var bitReader = new BitReader(array, 0);
+
+        while (!bitReader.isEnd()) {
+            this.sampleDependencies.push({
+                isLeading: bitReader.readBits(2),
+                sampleDependsOn: bitReader.readBits(2),
+                sampleIsDependedOn: bitReader.readBits(2),
+                sampleHasRedundency: bitReader.readBits(2),
+            });
+        }
+
+        this.entryCount = this.sampleDependencies.length;
+
+        return this.size;
+    }
+}
+
+class PartialSyncSampleAtom extends FullBox {
+    static {
+        Atom.constructorMap['stps'] = PartialSyncSampleAtom.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = "Partial Sync Sample Atom";
+        this.version = 0;
+        this.flags = 0;
+        this.entryCount = 0;
+        this.partialSyncSamples = [];
+    };
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.entryCount = reader.readUint32();
+
+        this.partialSyncSamples = new Uint32Array(this.entryCount);
+        var i = 0;
+        while (reader.offset < this.size) {
+            this.partialSyncSamples[i] = reader.readUint32();
+            ++i;
+        }
+
+        return reader.offset;
+    };
+};
+
+class WindowLocationAtom extends Atom {
+        static {
+        Atom.constructorMap['WLOC'] = WindowLocationAtom.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = "Window Location Atom";
+        this.x = 0;
+        this.y = 0;
+    }
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.x = reader.readInt16();
+        this.y = reader.readInt16();
+
+        return reader.offset;
     }
 }
