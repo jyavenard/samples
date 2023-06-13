@@ -1,0 +1,45 @@
+---
+title: Auto-fullscreen while hidden
+tags: Video Fullscreen
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto-fullscreen while hidden</title>
+<style>
+	#inline {
+		border: 1px solid black;
+	}
+	video {
+		max-width: 100%;
+		min-width: 150px;
+		min-height: 100px;
+	}
+</style>
+<script>
+window.addEventListener('load', async event => { 
+	let video = document.querySelector('video');
+	video.muted = false;
+	video.playsInline = false;
+
+	let src1 = video.appendChild(document.createElement('source'))
+	src1.src = '../../common_assets/media/BipBop.mp4';
+
+	let src2 = video.appendChild(document.createElement('source'))
+	src2.src = '../../common_assets/media/BipBop.webm';
+
+	video.load();
+
+	document.querySelector('#play').addEventListener('click', event => video.play());
+	document.querySelector('#enterFullscreen').addEventListener('click', event => video.webkitEnterFullscreen());
+});
+
+</script>
+</head>
+<body>
+<div>
+	<div class="inline">
+		<span>Video:</span><br>
+		<video controls></video>
+	</div>
+	<button id='play'>Play</button>
+	<button id='enterFullscreen'>Enter Fullscreen</button>
+</div>
