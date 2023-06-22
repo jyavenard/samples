@@ -1,0 +1,63 @@
+---
+title: Positioned WebVTT
+tags: Subtitles Video
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Positioned WebVTT</title>
+<style>
+	video {
+		border: 1px solid black;
+		max-width: 100%;
+		min-width: 640px;
+	}
+</style>
+<script>
+window.addEventListener('load', async event => { 
+	let video = document.querySelector('video');
+	video.muted = true;
+	video.playsInline = true;
+
+	let src1 = video.appendChild(document.createElement('source'))
+	src1.src = '../../common_assets/media/BipBop.mp4';
+	src1.type = 'video/mp4';
+
+	let src2 = video.appendChild(document.createElement('source'));
+	src2.src = '../../common_assets/media/BipBop.webm';
+	src2.type = 'video/webm';
+
+	let track = video.appendChild(document.createElement('track'));
+	track.src = 'positioned.webvtt';
+
+	track.kind = 'forced';
+	track.track.mode = 'showing';
+
+	video.load();
+
+	document.getElementById('next').addEventListener('click', event => {
+		let cues =  Array.from(video.textTracks[0].cues)
+			.sort((a, b) => a.startTime > b.startTime);
+		let nextCue = cues.find(cue => cue.startTime > video.currentTime);
+		if (nextCue)
+			video.currentTime = nextCue.startTime + (nextCue.endTime - nextCue.startTime) / 2;
+	});
+
+	document.getElementById('prev').addEventListener('click', event => {
+		let cues = Array.from(video.textTracks[0].cues)
+			.sort((a, b) => a.endTime < b.endTime);
+		let prevCue = cues.find(cue => cue.endTime < video.currentTime);
+		if (prevCue)
+			video.currentTime = prevCue.startTime + (prevCue.endTime - prevCue.startTime) / 2;
+	});
+
+});
+
+</script>
+</head>
+<body>
+<div>
+	<video controls></video>
+	<div>
+		<button id=prev>prev</button>
+		<button id=next>next</button>
+	</div>
+</div>
