@@ -1,0 +1,23 @@
+WEBVTT
+
+STYLE
+::cue { text-combine-upright: 2; }
+
+
+00:00:00.000 --> 00:00:01.000 vertical:rl line:0
+縦に<ruby>ルビー<rt>ruby</rt></ruby>
+
+00:00:00.000 --> 00:00:01.000 vertical:rl line:1
+縦の01数字
+
+00:00:01.000 --> 00:00:02.000 vertical:rl
+vertical:rl
+
+00:00:01.000 --> 00:00:02.000 vertical:lr
+vertical:lr
+
+00:00:02.000 --> 00:00:03.000 vertical:rl
+縦型日本語
+
+00:00:02.000 --> 00:00:03.000 vertical:lr
+босоо монгол

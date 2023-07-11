@@ -1,0 +1,50 @@
+---
+title: Vertical Cues
+tags: Subtitles
+---
+<meta name="viewport" content="width=device-width">
+<title>Vertical Cues</title>
+<style>
+	video {
+		border: 1px solid black;
+		width: 640px;
+		max-width: 100%;
+	}
+	.vertical { 
+		writing-mode: vertical-rl;
+		text-combine-upright: 2;
+		font-size: 200%;
+		background-color: magenta;
+		color: white;
+		padding: 4px;
+		margin: 4px;
+	}
+	.vertical span { background-color: black }
+	.vertical span ruby > rt { background-color: black }
+</style>
+<script src=webvtt-helper.js></script>
+<script>
+window.addEventListener('load', async event => { 
+	let video = document.querySelector('video');
+	video.textTracks[0].mode = 'showing';
+	addNextPreviousButtons(video);
+});
+
+</script>
+</head>
+<body>
+<div>
+	<video muted playsinline controls>
+		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4; codecs=hvc1.1.6.L123.B0">
+		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
+		<track src="vertical-cues.webvtt" kind="captions" srclang="en" label="vertical cues">
+	</video>
+	<div>
+		<div>Vertical Text Examples</div>
+		<div class="vertical">
+			<span>縦に<ruby>ルビー<rt>ruby</rt></ruby></span>
+			<br>
+			<span>縦の01数字</span>
+		</div>
+	</div>
+</div>

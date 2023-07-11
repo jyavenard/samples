@@ -1,36 +1,21 @@
 ---
-title: Inline Style & WebVTT
+title: WebVTT Cues with Line Breaks
 tags: Subtitles Video
 ---
-<meta name="viewport" content="width=device-width, 	">
-<title>Inline Style & WebVTT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas & HLS</title>
 <style>
 	video {
 		border: 1px solid black;
-		width: 640px;
 		max-width: 100%;
 	}
-::cue { color: red; }
-::cue(#id),
-::cue(.class),
-::cue(b),
-::cue(i),
-::cue(u),
-::cue(ruby),
-::cue(rt),
-::cue(v),
-::cue(lang)
-{
-	color: green;
-}
 </style>
 <script src=webvtt-helper.js></script>
 <script>
 window.addEventListener('load', async event => { 
 	let video = document.querySelector('video');
-	video.load();
+	video.textTracks[0].mode = 'showing';
 	addNextPreviousButtons(video);
-
 });
 
 </script>
@@ -40,6 +25,6 @@ window.addEventListener('load', async event => {
 	<video muted playsinline controls>
 		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4; codecs=hvc1.1.6.L123.B0">
 		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
-		<track src="inline-style.webvtt" kind="captions" srclang="en" label="cues with line breaks">
+		<track src="cues-with-line-breaks.webvtt" kind="captions" srclang="en" label="cues with line breaks">
 	</video>
 </div>

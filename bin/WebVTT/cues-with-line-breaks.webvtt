@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:01.000
+This cue
+is so long
+that it is broken
+into multiple
+lines
+
+00:00:01.000 --> 00:00:02.000
+This cue has no breaks but is so long that it will be broken into multiple lines
+
+00:00:02.000 --> 00:00:03.000
+This cue has
+a <ruby><rb>ruby</rb><rt>ruby</rt></ruby> element
+on the second line

@@ -11,53 +11,21 @@ tags: Subtitles Video
 		min-width: 640px;
 	}
 </style>
+<script src=webvtt-helper.js></script>
 <script>
 window.addEventListener('load', async event => { 
 	let video = document.querySelector('video');
-	video.muted = true;
-	video.playsInline = true;
-
-	let src1 = video.appendChild(document.createElement('source'))
-	src1.src = '../../common_assets/media/BipBop.mp4';
-	src1.type = 'video/mp4';
-
-	let src2 = video.appendChild(document.createElement('source'));
-	src2.src = '../../common_assets/media/BipBop.webm';
-	src2.type = 'video/webm';
-
-	let track = video.appendChild(document.createElement('track'));
-	track.src = 'positioned.webvtt';
-
-	track.kind = 'forced';
-	track.track.mode = 'showing';
-
-	video.load();
-
-	document.getElementById('next').addEventListener('click', event => {
-		let cues =  Array.from(video.textTracks[0].cues)
-			.sort((a, b) => a.startTime > b.startTime);
-		let nextCue = cues.find(cue => cue.startTime > video.currentTime);
-		if (nextCue)
-			video.currentTime = nextCue.startTime + (nextCue.endTime - nextCue.startTime) / 2;
-	});
-
-	document.getElementById('prev').addEventListener('click', event => {
-		let cues = Array.from(video.textTracks[0].cues)
-			.sort((a, b) => a.endTime < b.endTime);
-		let prevCue = cues.find(cue => cue.endTime < video.currentTime);
-		if (prevCue)
-			video.currentTime = prevCue.startTime + (prevCue.endTime - prevCue.startTime) / 2;
-	});
-
+	video.textTracks[0].mode = 'showing';
+	addNextPreviousButtons(video);
 });
 
 </script>
 </head>
 <body>
 <div>
-	<video controls></video>
-	<div>
-		<button id=prev>prev</button>
-		<button id=next>next</button>
-	</div>
+	<video muted playsinline controls>
+		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4; codecs=hvc1.1.6.L123.B0">
+		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
+		<track src="positioned.webvtt" kind="captions" srclang="en" label="cues with line breaks">
+	</video>
 </div>

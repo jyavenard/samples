@@ -1,0 +1,36 @@
+---
+title: Ruby Line-Box
+tags: Ruby Layout
+---
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Ruby Line-Box</title>
+	<style>
+		div#test1 {
+			display: inline-block;
+			border: 1px solid blue;
+			box-sizing: border-box;
+			padding: .1em;
+			font-size: 300%;
+		}
+		div#test1 > span {
+			border: 1px solid green;
+		}
+		ruby {
+			border: 1px solid red;
+		}
+		rb, rt {
+			border: 1px solid black;
+			background-color: cyan;
+		}
+	</style>
+</head>
+<body>
+	<div id=test1>
+		<span>one <ruby><rb>two</rb><rt>2</rt></ruby> three</span>
+	</div>
+</body>
+</html>
