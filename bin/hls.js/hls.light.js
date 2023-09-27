@@ -2576,7 +2576,7 @@
     return !!typeCodes && typeCodes[codec.slice(0, 4)] === true;
   }
   function isCodecSupportedInMp4(codec, type) {
-    return MediaSource.isTypeSupported((type || 'video') + "/mp4;codecs=\"" + codec + "\"");
+    return getMediaSource().isTypeSupported((type || 'video') + "/mp4;codecs=\"" + codec + "\"");
   }
 
   var MASTER_PLAYLIST_REGEX = /#EXT-X-STREAM-INF:([^\r\n]*)(?:[\r\n](?:#[^\r\n]*)?)*([^\r\n]+)|#EXT-X-(SESSION-DATA|SESSION-KEY|DEFINE|CONTENT-STEERING|START):([^\r\n]*)[\r\n]+/g;
