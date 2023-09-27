@@ -1,0 +1,75 @@
+---
+title: Media Element Source Node
+tags: WebAudio
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    video { max-width: 100%; }
+</style>
+<title>Media Element Source Node</title>
+    <script>
+    window.addEventListener('load', event => {
+        var video = document.getElementsByTagName('video')[0];
+        var context = new AudioContext({latencyHint: "interactive"});
+        var sourceNode = context.createMediaElementSource(video);
+        var analyser = context.createAnalyser();
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = 0.4;
+        sourceNode.connect(analyser);
+
+        gainNode = context.createGain();
+        gainNode.gain.value = 0.1;
+
+        // analyser.connect(context.destination);
+        analyser.connect(gainNode);
+        gainNode.connect(context.destination);
+
+        var canvas = document.getElementsByTagName('canvas')[0];
+
+        function analyse() {
+            var freqDomain = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(freqDomain);
+
+            var height = canvas.height;
+            var width = canvas.width;
+            var barWidth = width / analyser.frequencyBinCount;
+
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, width, height);
+
+            for (var i = 0; i < analyser.frequencyBinCount; i++) {
+                var percent = freqDomain[i] / 256;
+                var barHeight = height * percent;
+                var offset = height - barHeight - 1;
+                ctx.fillStyle = 'rgb(255, 0, 0)';
+                ctx.fillRect(i * barWidth, offset, barWidth, barHeight);
+            }
+            requestAnimationFrame(analyse);
+        };
+        requestAnimationFrame(analyse);
+        gainSlider.addEventListener('change', event => {
+            gainNode.gain.value = event.target.value;   
+        });
+        gainSlider.value = gainNode.gain.value;
+        playbackRateSlider.addEventListener('change', event => {
+            video.playbackRate = event.target.value;    
+        });
+        playbackRateSlider.value = video.playbackRate;
+        startButton.addEventListener('click', event => {
+            context.resume();
+            video.play();
+        });
+    });
+    </script>
+</head>
+<body>
+    <video loop controls preload="none" playsinline>
+        <source src="../../common_assets/media/BipBop.mp4" type="video/mp4">
+        <source src="../../common_assets/media/BipBop.webm" type="video/webm">
+    </video><br/>
+    <button id="startButton">start</button><br />
+    gain: <input id="gainSlider" type="range" min=0 max=1 step=0.01 /><br/>
+    rate: <input id="playbackRateSlider" type="range" min=0 max=2 step=0.01 /><br/>
+    <canvas></canvas>
+</body>
+</html>
