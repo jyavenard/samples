@@ -15,7 +15,23 @@ tags: Video Fullscreen
         height: 100%;
     }
 
+    .video-container:fullscreen {
+        font-size: 200%;
+    }
+
     .video-controls {
+        position: absolute;
+        top:0;
+        left:0;
+        height: 100%;
+        width: 100%;
+
+        display: flex;
+        justify-content: center;
+    }
+
+    .video-controls .video-controls-bar {
+        align-self: flex-end;
         background-color: black;
         color: white;
 
@@ -30,31 +46,49 @@ tags: Video Fullscreen
         box-sizing: border-box;
 
         width: 100%;
+        height: 2em;
+        padding: 0 1em;
+    }
+
+    .video-container:fullscreen .video-controls .video-controls-bar {
+        margin-bottom: 1em;
+        width: calc(100% - 10em);
+        border-radius: .5em;
+    }
+
+    .video-container:fullscreen .video-controls .play-pause .icon {
+        width: 10em;
+        height: 10em;
+    }
+
+    .video-container:fullscreen .video-controls .play-pause {
         position: absolute;
-        bottom: 0px;
-        left: 0px;
+        width: 10em;
+        height: 10em;
+        top: calc(50% - 7.5em);
+        left: calc(50% - 7.5em);
+        padding: 2.5em;
+        border-radius: 7.5em;
+        background-color: black;
     }
 
-    .video-container:fullscreen .video-controls {
-        bottom: 3em;
-        left: 10em;
-        right: 10em;
-        width: auto;
-        border-radius: 0.5lh;
-    }
-
-    .video-container .video-controls .button:hover {
+    .video-container .video-controls .button .icon:hover {
         background-color: cyan;
         cursor: pointer;
     }
-    .video-container .video-controls .button:active {
+    .video-container .video-controls .button .icon:active {
         transform: scale(1.1);
     }
     .video-container .video-controls .timeline {
         flex-grow: 1;
+        background-color: black;
+        font-size: 100%;
+        height: 1em;
         -webkit-appearance: none;
     }
+
     .video-container .video-controls .timeline::-webkit-slider-runnable-track {
+        -webkit-appearance: none;
         width: 100%;
         height: 0.5em;
         cursor: pointer;
@@ -70,8 +104,7 @@ tags: Video Fullscreen
         cursor: pointer;
     }
 
-
-    .video-container .video-controls .button {
+    .video-container .video-controls .button .icon {
         width: 1em;
         height: 1em;
         background-color: white;
@@ -80,16 +113,17 @@ tags: Video Fullscreen
         mask-size: 100% 100%;
     }
 
-    .video-container:has(video:playing) .video-controls .play-pause { mask-image: url(Pause.svg) }
-    .video-container:has(video:paused) .video-controls .play-pause { mask-image: url(Play.svg) }
 
-    .video-container .video-controls .mute { mask-image: url(Volume3.svg); }
-    .video-container:has(video:muted) .video-controls .mute { mask-image: url(VolumeMuted.svg); }
+    .video-container:has(video:playing) .video-controls .play-pause .icon { mask-image: url(Pause.svg) }
+    .video-container:has(video:paused) .video-controls .play-pause .icon { mask-image: url(Play.svg) }
 
-    .video-container .video-controls .pip { mask-image: url(PipIn.svg); }
+    .video-container .video-controls .mute .icon { mask-image: url(Volume3.svg); }
+    .video-container:has(video:muted) .video-controls .mute .icon { mask-image: url(VolumeMuted.svg); }
 
-    .video-container .video-controls .fullscreen { mask-image: url(EnterFullscreen.svg); }
-    .video-container:fullscreen .video-controls .fullscreen { mask-image: url(ExitFullscreen.svg); }
+    .video-container .video-controls .pip .icon { mask-image: url(PipIn.svg); }
+
+    .video-container .video-controls .fullscreen .icon { mask-image: url(EnterFullscreen.svg); }
+    .video-container:fullscreen .video-controls .fullscreen .icon { mask-image: url(ExitFullscreen.svg); }
 
 </style>
 <script>
@@ -170,13 +204,23 @@ window.addEventListener('load', async event => {
     <div class=video-container>
         <video></video>
         <div class=video-controls>
-            <div class="play-pause button"></div>
-            <div class="mute button"></div>
-            <div class="current-time">00:00</div>
-            <input type=range class="timeline" step=0.1 min=0 max=1 value=0>
-            <div class="remaining-time">00:00</div>
-            <div class="pip button"></div>
-            <div class="fullscreen button"></div>
+            <div class=video-controls-bar>
+                <div class="play-pause button">
+                    <div class=icon></div>
+                </div>
+                <div class="mute button">
+                    <div class=icon></div>
+                </div>
+                <div class="current-time">00:00</div>
+                <input type=range class="timeline" step=0.1 min=0 max=1 value=0>
+                <div class="remaining-time">00:00</div>
+                <div class="pip button">
+                    <div class=icon></div>
+                </div>
+                <div class="fullscreen button">
+                    <div class=icon></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
