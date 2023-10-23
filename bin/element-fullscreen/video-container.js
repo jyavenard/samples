@@ -75,8 +75,12 @@ class VideoContainer extends HTMLElement {
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {
-		if (name === 'src')
-			this.#video.src = newValue;
+		if (this.#video) {
+			if (name.toLowerCase() === 'src')
+				this.#video.src = newValue;
+			if (name.toLowerCase() === 'playsinline')
+				this.#video.playsInline = newValue;
+		}
 	}
 
 	addSource(src, type) {
