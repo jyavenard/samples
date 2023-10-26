@@ -17,7 +17,7 @@
     }
 
     :host(:fullscreen) {
-        font-size: 200%;
+        font-size: 150%;
     }
 
     .video-controls {
@@ -53,7 +53,7 @@
     }
 
     :host(:fullscreen) .video-controls .video-controls-bar {
-        margin-bottom: 5cqmin;
+        margin-bottom: env(fullscreen-inset-bottom);
         width: calc(100% - 5cqmin);
         border-radius: .5cqmin;
     }
@@ -65,12 +65,12 @@
 
     :host(:fullscreen) .video-controls .play-pause {
         position: absolute;
-        width: 10cqmin;
-        height: 10cqmin;
-        top: calc(50% - 7.5cqmin);
-        left: calc(50% - 7.5cqmin);
-        padding: 2.5cqmin;
-        border-radius: 7.5cqmin;
+        width: 10vmin;
+        height: 10vmin;
+        top: calc(50% - 7.5vmin);
+        left: calc(50% - 7.5vmin);
+        padding: 5vmin;
+        border-radius: 5vmin;
         background-color: black;
     }
 

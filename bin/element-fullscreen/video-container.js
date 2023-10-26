@@ -19,6 +19,7 @@ class VideoContainer extends HTMLElement {
 		this.#video = this.shadowRoot.querySelector('video');
 	    this.#video.playsInline = this.getAttribute('playsInline') || true;
 	    this.#video.src = this.getAttribute('src');
+	    this.#video.load();
 
 	    let timeline = this.shadowRoot.querySelector('.timeline');
 	    let currentTime = this.shadowRoot.querySelector('.current-time');
