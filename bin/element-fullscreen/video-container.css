@@ -1,6 +1,6 @@
     video {
-        max-width: calc(100vw - 16px);
-        max-height: calc(100vh - 16px);
+        max-width: calc(100vw);
+        max-height: calc(100vh);
     }
     :host(:fullscreen) video {
         max-width: 100vw;
@@ -18,6 +18,7 @@
 
     :host(:fullscreen) {
         font-size: 150%;
+        background-color: black;
     }
 
     .video-controls {
@@ -53,7 +54,7 @@
     }
 
     :host(:fullscreen) .video-controls .video-controls-bar {
-        margin-bottom: env(fullscreen-inset-bottom);
+        margin-bottom: env(safe-area-inset-bottom);
         width: calc(100% - 5cqmin);
         border-radius: .5cqmin;
     }
