@@ -1079,6 +1079,7 @@ class DecoderConfigDescriptor extends BaseDescriptor {
             var specificInfo = new DecoderSpecificInfo(this);
             specificInfo.parse(buffer, offset + headerOffset)
             reader.skip(specificInfo.size);
+            headerOffset += specificInfo.size;
 
             this.specificInfo.push(specificInfo);
         }
