@@ -1,48 +1,36 @@
-function MediaSourceLoader(url, prefix)
-{
-    this._url = url;
-    this._prefix = prefix;
-    this._manifestTimeout = setTimeout(this.loadManifest.bind(this));
+class MediaSourceLoader {
+    #url;
+    #prefix;
+    #manifest;
+    #mediaData;
 
-    this.onload = null;
-    this.onerror = null;
-}
+    constructor(url, prefix) {
+        this.#url = url;
+        this.#prefix = prefix;
+    }
 
-MediaSourceLoader.prototype = {
-    load: async function()
-    {
-        if (this._manifestTimeout) {
-            clearTimeout(this._manifestTimeout);
-            this._manifestTimeout = null;
-        }
-        return this.loadManifest();
-    },
-
-    loadManifest: async function()
+    async load()
     {
         try {
-            let fetchResult = await fetch(this._url);
+            let fetchResult = await fetch(this.#url);
             let manifest = await fetchResult.json();
 
             if (manifest && manifest.url) {
-                this._manifest = manifest;
+                this.#manifest = manifest;
                 return this.loadMediaData();
             }
         } catch(e) {
         }
-
-        if (this.onerror)
-            this.onerror();
         return Promise.reject("Failed loading manifest");
-    },
+    }
 
-    loadMediaData: async function()
+    async loadMediaData()
     {
         try {
-            let url = (this._prefix ? this._prefix : '') + this._manifest.url;
+            let url = (this.#prefix ?? '') + this.#manifest.url;
             let fetchResult = await fetch(url);
             let arrayBuffer = await fetchResult.arrayBuffer();
-            this._mediaData = arrayBuffer;
+            this.#mediaData = arrayBuffer;
             if (this.onload)
                 this.onload();
             return;
@@ -52,66 +40,66 @@ MediaSourceLoader.prototype = {
         if(this.onerror)
             this.onerror();
         return Promise.reject("Failed loading media data");
-    },
+    }
 
-    type: function()
+    get type()
     {
-        return this._manifest ? this._manifest.type : "";
-    },
+        return this.#manifest?.type ?? "";
+    }
 
-    duration: function()
+    get duration()
     {
-        return this._manifest ? this._manifest.duration : 0
-    },
+        return this.#manifest?.duration ?? 0
+    }
 
-    initSegmentSize: function()
+    get initSegmentSize()
     {
-        if (!this._manifest || !this._manifest.init || !this._mediaData)
+        if (!this.#manifest || !this.#manifest.init || !this.#mediaData)
             return null;
-        var init = this._manifest.init;
+        var init = this.#manifest.init;
         return init.size;
-    },
+    }
 
-    initSegment: function()
+    get initSegment()
     {
-        if (!this._manifest || !this._manifest.init || !this._mediaData)
+        if (!this.#manifest || !this.#manifest.init || !this.#mediaData)
             return null;
-        var init = this._manifest.init;
-        return this._mediaData.slice(init.offset, init.offset + init.size);
-    },
+        var init = this.#manifest.init;
+        return this.#mediaData.slice(init.offset, init.offset + init.size);
+    }
 
-    mediaSegmentsLength: function()
+    get mediaSegmentsLength()
     {
-        if (!this._manifest || !this._manifest.media)
+        if (!this.#manifest || !this.#manifest.media)
             return 0;
-        return this._manifest.media.length;   
-    },
+        return this.#manifest.media.length;   
+    }
 
-    mediaSegment: function(segmentNumber)
+    mediaSegment(segmentNumber)
     {
-        if (!this._manifest || !this._manifest.media || !this._mediaData || segmentNumber >= this._manifest.media.length)
+        if (!this.#manifest || !this.#manifest.media || !this.#mediaData || segmentNumber >= this.#manifest.media.length)
             return null;
-        var media = this._manifest.media[segmentNumber];
-        return this._mediaData.slice(media.offset, media.offset + media.size);
-    },
+        var media = this.#manifest.media[segmentNumber];
+        return this.#mediaData.slice(media.offset, media.offset + media.size);
+    }
 
-    mediaSegmentSize: function(segmentNumber)
+    mediaSegmentSize(segmentNumber)
     {
-        if (!this._manifest || !this._manifest.media || !this._mediaData || segmentNumber >= this._manifest.media.length)
+        if (!this.#manifest || !this.#manifest.media || !this.#mediaData || segmentNumber >= this.#manifest.media.length)
             return 0;
-        var media = this._manifest.media[segmentNumber];
+        var media = this.#manifest.media[segmentNumber];
         return media.size;
-    },
+    }
 
-    mediaSegmentEndTime: function(segmentNumber)
+    mediaSegmentEndTime(segmentNumber)
     {
-        if (!this._manifest || !this._manifest.media || !this._mediaData || segmentNumber >= this._manifest.media.length)
+        if (!this.#manifest || !this.#manifest.media || !this.#mediaData || segmentNumber >= this.#manifest.media.length)
             return 0;
-        var media = this._manifest.media[segmentNumber];
+        var media = this.#manifest.media[segmentNumber];
         return media.timestamp + media.duration;
-    },
+    }
 
-    concatenateMediaSegments: function(segmentDataList)
+    concatenateMediaSegments(segmentDataList)
     {
         var totalLength = 0;
         segmentDataList.forEach(segment => totalLength += segment.byteLength);
@@ -122,5 +110,5 @@ MediaSourceLoader.prototype = {
             offset += segment.byteLength;
         });
         return view.buffer;
-    },
+    }
 };
