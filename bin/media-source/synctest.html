@@ -15,10 +15,18 @@ tags: Video MSE
     }
 
 	window.addEventListener('load', async event => {
-        let video = document.createElement('video');
-        document.body.appendChild(video);
+        let video = document.querySelector('video');
         video.controls = true;
         video.playsInline = true;
+
+        let preservesPitch = document.querySelector('#preserves-pitch');
+        preservesPitch.checked = video.preservesPitch;
+        preservesPitch.addEventListener('change', event => { video.preservesPitch = event.target.checked });
+
+        let playbackRate = document.querySelector('#playback-rate');
+        playbackRate.value = video.playbackRate;
+        playbackRate.addEventListener('change', event => { video.playbackRate = event.target.value });
+        video.addEventListener('ratechange', event => { playbackRate.value = video.playbackRate });
 
         mediaSource = new MediaSource();
         video.srcObject = mediaSource;
@@ -38,6 +46,20 @@ tags: Video MSE
 	</script>
 </head>
 <body>
-
+    <video controls playsinline></video>
+    <div>
+        <label for="preserves-pitch">Preserves Pitch: </label>
+        <input type="checkbox" id="preserves-pitch">
+    </div>
+    <div>
+        <label for="playback-rate">Playback Rate: </label>
+        <select id="playback-rate">
+              <option value="1">1</option>
+              <option value="1.25">1.25</option>
+              <option value="1.5">1.5</option>
+              <option value="1.75">1.75</option>
+              <option value="2">2</option>
+        </select>
+    </div>
 </body>
 </html>
