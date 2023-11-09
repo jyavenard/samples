@@ -1,0 +1,67 @@
+---
+title: Portrait Aspect Ratio WebVTT
+tags: Subtitles Video
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Positioned WebVTT</title>
+<style>
+	@font-face {
+	    font-family: 'Ahem';
+	    src: url('../../common_assets/fonts/ahem.ttf');
+	}
+
+	video {
+		border: 1px solid black;
+		object-fit: contain;
+		container-type: size;
+	}
+
+	::cue {
+	}
+	body.cqmin ::cue {
+		font: 5cqmin/1 sans-serif !important;
+	}
+	body.cqh ::cue {
+		font: 5cqh/1 sans-serif !important;
+	}
+</style>
+<script src=webvtt-helper.js></script>
+<script>
+window.addEventListener('load', async event => { 
+	for (var video of document.querySelectorAll('video')) {
+		video.textTracks[0].mode = 'showing';
+		addNextPreviousButtons(video);
+	}
+	document.body.className = 'cqh';
+	let fontSizeSelect = document.getElementById('font-size');
+	fontSizeSelect.value = 'cqh';
+	fontSizeSelect.addEventListener('change', event => {
+		document.body.className = event.target.value;
+	});
+});
+</script>
+</head>
+<body>
+<div>
+	<div>
+		<select id=font-size>
+			<option value="cqh">5vh</option>
+			<option value="cqmin">5vmin</option>
+		</select>
+	</div>
+	<video muted playsinline style="width: 240px; height: 640px;">
+		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4">
+		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
+		<track src="positioned.webvtt" kind="captions" srclang="en" label="cues with line breaks">
+	</video>
+	<video muted playsinline style="width: 320px; height:240px;">
+		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4">
+		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
+		<track src="positioned.webvtt" kind="captions" srclang="en" label="cues with line breaks">
+	</video>
+	<video muted playsinline style="width: 640px; height:240px;">
+		<source src="../../common_assets/media/BipBop.mp4" type="video/mp4">
+		<source src="../../common_assets/media/BipBop.webm" type="video/webm">
+		<track src="positioned.webvtt" kind="captions" srclang="en" label="cues with line breaks">
+	</video>
+</div>
