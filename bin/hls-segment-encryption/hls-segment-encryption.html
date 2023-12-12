@@ -1,0 +1,58 @@
+---
+title: HLS Segment Encryption
+tags: Video EME
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HLS Segment Encryption</title>
+<style>
+	video {
+		border: 1px solid black;
+		max-width: 100%;
+		min-width: 150px;
+		min-height: 100px;
+	}
+</style>
+<script src="support.js"></script>
+<script>
+window.addEventListener('load', async event => { 
+	let video = document.querySelector('video');
+	video.muted = true;
+	video.playsInline = true;
+
+	video.src = '../../common_assets/media/clearkey/prog_index.m3u8';
+	let needkeyEvent = await waitFor(video, 'webkitneedkey');
+
+    if (!video.webkitKeys)
+        video.webkitSetMediaKeys(new WebKitMediaKeys('org.w3c.clearkey'));
+
+    window.session = video.webkitKeys.createSession('application/x-mpegurl', needkeyEvent.initData);
+    let messageEvent = await waitFor(session, 'webkitkeymessage');
+	let keyId = uInt8ArrayToString(messageEvent.message);
+
+    let keyResponse = await fetch('../../common_assets/media/clearkey/crypt0.key');
+    let keyData = new Uint8Array(await keyResponse.arrayBuffer());
+
+    var responseObject = {
+        keys: [{
+            'kty': 'oct',
+            'alg': 'A128KW',
+            'kid': keyId,
+            'k': base64EncodeUint8Array(keyData)
+        }]
+    };
+    var responseString = JSON.stringify(responseObject);
+    var responseData = stringToUInt8Array(responseString);
+
+    session.update(responseData);
+    await waitFor(session, 'webkitkeyadded');
+    waitFor(session, 'webkitkeyerror').then(e => { console.log('Key Error'); })
+    console.log('Key Added');
+    await waitFor(video, 'canplay');
+    console.log('Success');
+});
+</script>
+</head>
+<body>
+<div>
+	<video controls></video>
+</div>
