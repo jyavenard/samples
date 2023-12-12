@@ -1,6 +1,20 @@
+function LOG(string) {
+    let logDiv = document.getElementById('log');
+    if (!logDiv) {
+        logDiv = document.createElement('div');
+        logDiv.id = 'log';
+        document.body.appendChild(logDiv);
+    }
+    let logLine = document.createElement('div');
+    logLine.innerHTML = string;
+    logDiv.appendChild(logLine);
+}
+
 function waitFor(element, type, silent, success) {
     return new Promise(resolve => {
         element.addEventListener(type, event => {
+            if (!silent)
+                LOG(`EVENT(${event.type})`);
             resolve(event);
         }, { once: true });
     });

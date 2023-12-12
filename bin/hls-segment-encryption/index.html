@@ -5,35 +5,38 @@ tags: Video EME
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HLS Segment Encryption</title>
 <style>
-	video {
-		border: 1px solid black;
-		max-width: 100%;
-		min-width: 150px;
-		min-height: 100px;
-	}
+    video {
+        border: 1px solid black;
+        max-width: 100%;
+        min-width: 150px;
+        min-height: 100px;
+    }
 </style>
 <script src="support.js"></script>
 <script>
 window.addEventListener('load', async event => { 
-	let video = document.querySelector('video');
-	video.muted = true;
-	video.playsInline = true;
+    let video = document.querySelector('video');
+    video.muted = true;
+    video.playsInline = true;
 
-	video.src = '../../common_assets/media/clearkey/prog_index.m3u8';
-	video.addEventListener('webkitneedkey', keyNeeded);
+    video.src = '../../common_assets/media/clearkey/prog_index.m3u8';
+    video.addEventListener('webkitneedkey', keyNeeded);
+
+    await waitFor(video, 'canplay');
 });
 
 async function keyNeeded(needkeyEvent) {
-	let video = needkeyEvent.target;
+    let keyId = uInt8ArrayToString(needkeyEvent.initData);
+    LOG(`EVENT(${needkeyEvent.type}): initData="${keyId}"`)
+    let video = needkeyEvent.target;
 
     if (!video.webkitKeys)
         video.webkitSetMediaKeys(new WebKitMediaKeys('org.w3c.clearkey'));
 
     window.session = video.webkitKeys.createSession('application/x-mpegurl', needkeyEvent.initData);
     let messageEvent = await waitFor(session, 'webkitkeymessage');
-	let keyId = uInt8ArrayToString(messageEvent.message);
 
-    let keyResponse = await fetch('../../common_assets/media/clearkey/crypt0.key');
+    let keyResponse = await fetch(`../../common_assets/media/clearkey/${keyId}`);
     let keyData = new Uint8Array(await keyResponse.arrayBuffer());
 
     var responseObject = {
@@ -49,14 +52,12 @@ async function keyNeeded(needkeyEvent) {
 
     session.update(responseData);
     await waitFor(session, 'webkitkeyadded');
-    waitFor(session, 'webkitkeyerror').then(e => { console.log('Key Error'); })
-    console.log('Key Added');
-    await waitFor(video, 'canplay');
-    console.log('Success');
+    waitFor(session, 'webkitkeyerror').then(e => { LOG('FAILED: Key Error'); })
 }
 </script>
 </head>
 <body>
 <div>
-	<video controls></video>
+    <video controls></video>
+    <div id=log></div>
 </div>
