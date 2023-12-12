@@ -20,7 +20,11 @@ window.addEventListener('load', async event => {
 	video.playsInline = true;
 
 	video.src = '../../common_assets/media/clearkey/prog_index.m3u8';
-	let needkeyEvent = await waitFor(video, 'webkitneedkey');
+	video.addEventListener('webkitneedkey', keyNeeded);
+});
+
+async function keyNeeded(needkeyEvent) {
+	let video = needkeyEvent.target;
 
     if (!video.webkitKeys)
         video.webkitSetMediaKeys(new WebKitMediaKeys('org.w3c.clearkey'));
@@ -49,7 +53,7 @@ window.addEventListener('load', async event => {
     console.log('Key Added');
     await waitFor(video, 'canplay');
     console.log('Success');
-});
+}
 </script>
 </head>
 <body>
