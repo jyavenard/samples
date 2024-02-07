@@ -89,6 +89,7 @@ tags: Video Formats
                 if (typeof(value) == 'function')
                     continue;
                 var div = document.createElement('div');
+                div.classList.add('row');
                 var dt = document.createElement('dt');
                 dt.appendChild(document.createTextNode(property + ': '));
                 var dd = document.createElement('dd');
@@ -129,8 +130,8 @@ tags: Video Formats
     </script>
     <style>
         dl { border: 1px solid black; padding: 1px; }
+        /*
         dt, dd { display: inline; }
-        /*dt:after { content:": " }*/
         dd:after { content:"\A"; white-space:pre; }
         dd dl { margin: 0; vertical-align: top }
         dd span { display: inline-block; vertical-align: top; }
@@ -138,14 +139,14 @@ tags: Video Formats
         dt, dd { display: inline-block; min-width: 14em; }
         dd { margin-left: 1em; }
         dd th { font-weight: normal; text-align: right; }
-        .description { text-align: center; font-weight: bold; }
+        */
+        dl { min-width: 14em; }
+        div.description { text-align: center; font-weight: bold; display: table-caption; }
 
         /* make the output display as a table */
-        /*
         dl { display: table; }
-        dl div { display: table-row; }
+        .row { display: table-row; }
         dt, dd { display: table-cell; }
-        */
     </style>
 </head>
 <body id="atomtester" onload="setup()">

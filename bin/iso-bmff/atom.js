@@ -150,9 +150,10 @@ class Atom {
         if (buffer.byteLength - offset < this.minimumSize)
             return null;
 
-        var view = new DataView(buffer, offset, 12);
+        var view = new DataView(buffer, offset, 4);
         var size = view.getUint32(0);
         if (size == 1) {
+            view = new DataView(buffer, offset, 12);
             var upper = view.getUint32(4);
             var lower = view.getUint32(8);
             size = (upper << 32)  + lower;
@@ -296,6 +297,9 @@ class ContainerAtom extends Atom {
         Atom.constructorMap['schi'] = ContainerAtom.bind(null, 'Scheme Information Box');
         Atom.constructorMap['dinf'] = ContainerAtom.bind(null, 'Data Information Box');
         Atom.constructorMap['udta'] = ContainerAtom.bind(null, 'User Data Box');
+        Atom.constructorMap['fpsd'] = ContainerAtom.bind(null, 'FairPlay Streaming InitData Box');
+        Atom.constructorMap['fpsk'] = ContainerAtom.bind(null, 'FairPlay Key Request Box');
+
     }
 
     constructor(description, parent) {
@@ -2085,7 +2089,7 @@ class PartialSyncSampleAtom extends FullBox {
 };
 
 class WindowLocationAtom extends Atom {
-        static {
+    static {
         Atom.constructorMap['WLOC'] = WindowLocationAtom.bind(null);
     }
 
@@ -2106,5 +2110,117 @@ class WindowLocationAtom extends Atom {
         this.y = reader.readInt16();
 
         return reader.offset;
+    }
+}
+
+class FpsKeySystemInfoBox extends FullBox {
+    static {
+        Atom.constructorMap['fpsi'] = FpsKeySystemInfoBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = "FairPlay InitData Info Box";
+        this.scheme = 0;
+    }
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.scheme = reader.readUint32();
+
+        return reader.offset;
+    }
+}
+
+
+class FpsKeyRequestInfoBox extends FullBox {
+    static {
+        Atom.constructorMap['fkri'] = FpsKeyRequestInfoBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = 'FairPlay Key Request Info Box';
+        this.keyId = null;
+    }
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.keyId = new Uint8Array(buffer, offset + headerOffset, 16);
+    }
+}
+
+class FpsKeyAssetIdBox extends Atom {
+    static {
+        Atom.constructorMap['fkai'] = FpsKeyAssetIdBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = 'FairPlay Key Request Asset Id Box';
+        this.assetId = null;
+    }
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        this.assetId = new Uint8Array(buffer, offset + headerOffset, 16);
+    }
+}
+
+
+class FpsKeyContextBox extends Atom {
+    static {
+        Atom.constructorMap['fkcx'] = FpsKeyContextBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = 'FairPlay Key Request Context Box';
+        this.context = null;
+    }
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        let dataSize = this.size - headerOffset;
+        this.context = new Uint8Array(buffer, offset + headerOffset, dataSize);
+    }
+}
+
+// optional Version List
+class FpsKeyVersionListBox extends Atom {
+    static {
+        Atom.constructorMap['fkvl'] = FpsKeyVersionListBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = 'FairPlay Key Request Version List Box';
+        this.versions = null;
+    }
+
+    parse(buffer, offset) {
+        var headerOffset = super.parse(buffer, offset);
+        var reader = new DataReader(buffer, offset, this.size);
+        reader.skip(headerOffset);
+
+        let dataSize = this.size - headerOffset;
+        this.versions = new Uint32Array(buffer, offset + headerOffset, dataSize / 4);
     }
 }
