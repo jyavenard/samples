@@ -1,0 +1,30 @@
+---
+title: Too Many Contexts
+tags: WebAudio
+---
+<script>
+	var audioContexts = [];
+	function go()
+	{
+		let contextCount = document.getElementById('context-count');
+		for (var i = 0; i < 500; ++i) {
+			let context = new AudioContext();
+	        let gain = context.createGain();
+	        gain.connect(context.destination);
+	        audioContexts.push(context);
+	        contextCount.innerText = audioContexts.length;
+		}
+	};
+</script>
+</head>
+<body>
+	<p>
+		Each click of the "go" button creates 500 playing, empty AudioContexts.
+	</p>
+	<p>
+		<button onclick="go()">go</button>
+	</p>
+	<p>
+		AudioContext count: <span id=context-count>0</span>
+	</p>
+</body>

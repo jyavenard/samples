@@ -1,0 +1,71 @@
+---
+title: Oscillator
+tags: WebAudio
+---
+    <style>
+        .box { display:-webkit-box; -webkit-box-pack: justify; }
+        .box > * { padding: 5px; }
+        .flex { -webkit-box-flex: 1;  }
+        .flex input { width: 100%; }
+    </style>
+    <script>
+        var context = new AudioContext();
+        var gain = context.createGain();
+        gain.connect(context.destination);
+
+        var oscillator = null;
+        var frequency;
+    
+        function setFrequency(value, power) { 
+            frequency = Math.pow(value, power);
+            if (oscillator)
+                oscillator.frequency.value = frequency;
+            var output = document.getElementById('frequency');
+            output.value = frequency.toFixed(0);
+        }
+
+        function setVolume(value) {
+            gain.gain.value = value;
+            var volume = document.getElementById('volume');
+            volume.value = (value * 100).toFixed(0) + "%";
+        }
+
+        function play() {
+            if (oscillator)
+                stop();
+            oscillator = context.createOscillator();
+            oscillator.connect(gain);
+            oscillator.frequency.value = frequency;
+            oscillator.start(0);
+        }
+
+        function stop() {
+            oscillator.disconnect();
+            oscillator = null;
+        }
+
+        window.addEventListener('load', function() { setFrequency(1000, 1); }, true);
+    </script>
+</head>
+<body onload="play()">
+    <button onclick="play()">play</button><button onclick="stop()">stop</button><br/>
+    <div class=box>
+        <p>Frequency:</p>
+        <p class=flex>
+            <input type="range" min=1 max=148 value=31 step=0.1 oninput="setFrequency(event.target.value, 2)" onchange="setFrequency(event.target.value, 2)"></input>
+        </p>
+        <p>
+            <input id='frequency' value=0 oninput="setFrequency(event.target.value, 1)" onchange="setFrequency(event.target.value, 1)"></input>
+        </p>
+    </div>
+    <div class=box>
+        <p>Volume:</p>
+        <p class=flex>
+            <input type="range" min=0 max=2 value=1 step=0.01 oninput="setVolume(event.target.value)" onchange="setVolume(event.target.value)"></input>
+        </p>
+        <p>
+            <input id='volume' value="100%"></input>
+        </p>
+    </div>
+</body>
+</html>

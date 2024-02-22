@@ -1,0 +1,105 @@
+---
+title: Multiple Contexts
+tags: WebAudio
+---
+    <style>
+        .box { display:-webkit-box; -webkit-box-pack: justify; }
+        .box > * { padding: 5px; }
+        .flex { -webkit-box-flex: 1;  }
+        .flex input { width: 100%; }
+    </style>
+    <script>
+        var context1 = new AudioContext();
+        var context2 = new AudioContext();
+        var gain1 = context1.createGain();
+        gain1.connect(context1.destination);
+        var gain2 = context2.createGain();
+        gain2.connect(context2.destination);
+
+        var oscillator1 = null;
+        var oscillator2 = null;
+        var frequency;
+        var delta = 0;
+    
+        function setFrequency(value, power) { 
+            frequency = Math.pow(value, power);
+            if (oscillator1)
+                oscillator1.frequency.value = frequency;
+            if (oscillator2)
+                oscillator2.frequency.value = frequency + delta;
+            var output = document.getElementById('frequency');
+            output.value = frequency.toFixed(0);
+        }
+
+        function setDelta(value, power) { 
+            delta = Math.pow(value, power);
+            if (oscillator1)
+                oscillator1.frequency.value = frequency - delta / 2;
+            if (oscillator2)
+                oscillator2.frequency.value = frequency + delta / 2;
+            var output = document.getElementById('delta');
+            output.value = delta.toFixed(0);
+        }
+
+        function setVolume(value) {
+            gain1.gain.value = value;
+            gain2.gain.value = value;
+            var volume = document.getElementById('volume');
+            volume.value = (value * 100).toFixed(0) + "%";
+        }
+
+        function play() {
+            if (oscillator1)
+                stop();
+            oscillator1 = context1.createOscillator();
+            oscillator1.connect(gain1);
+            oscillator1.frequency.value = frequency - delta / 2;
+            oscillator2 = context2.createOscillator();
+            oscillator2.connect(gain2);
+            oscillator2.frequency.value = frequency + delta / 2;
+
+            oscillator1.start(0);
+            oscillator2.start(0);
+        }
+
+        function stop() {
+            oscillator1.disconnect();
+            oscillator1 = null;
+            oscillator2.disconnect();
+            oscillator2 = null;
+        }
+
+        window.addEventListener('load', function() { setFrequency(1000, 1); setDelta(25, 1); }, true);
+    </script>
+</head>
+<body onload="play()">
+    <button onclick="play()">play</button><button onclick="stop()">stop</button><br/>
+    <div class=box>
+        <p>Frequency:</p>
+        <p class=flex>
+            <input type="range" min=1 max=148 value=31 step=0.1 oninput="setFrequency(event.target.value, 2)" onchange="setFrequency(event.target.value, 2)"></input>
+        </p>
+        <p>
+            <input id='frequency' value=0 oninput="setFrequency(event.target.value, 1)" onchange="setFrequency(event.target.value, 1)"></input>
+        </p>
+    </div>
+    <div class=box>
+        <p>Delta:</p>
+        <p class=flex>
+            <input type="range" min=1 max=148 value=5 step=0.1 oninput="setDelta(event.target.value, 2)" onchange="setDelta(event.target.value, 2)"></input>
+        </p>
+        <p>
+            <input id='delta' value=0 oninput="setDelta(event.target.value, 1)" onchange="setDelta(event.target.value, 1)"></input>
+        </p>
+    </div>
+    <div class=box>
+        <p>Volume:</p>
+        <p class=flex>
+            <input type="range" min=0 max=2 value=1 step=0.01 oninput="setVolume(event.target.value)" onchange="setVolume(event.target.value)"></input>
+        </p>
+        <p>
+            <input id='volume' value="100%"></input>
+        </p>
+    </div>
+</body>
+</html>
