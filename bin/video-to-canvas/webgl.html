@@ -1,0 +1,141 @@
+---
+title: WebGL & Video
+tags: Video WebGL
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebGL & Video</title>
+<style>
+    .inline {
+        display: inline-block;
+        vertical-align: top;
+        max-width: calc(33% - 10px);
+    }
+    video, canvas {
+        border: 1px solid black;
+        max-width: 100%;
+        min-width: 150px;
+        min-height: 100px;
+    }
+</style>
+<script id="vertexShaderSource" type="text/glsl">
+attribute vec4 a_position;
+varying vec2 v_texturePosition;
+
+void main() {
+    v_texturePosition = vec2((a_position.x + 1.0) / 2.0, (a_position.y + 1.0) / 2.0);
+    gl_Position = a_position;
+}
+</script>
+<script id="fragmentShaderSource" type="text/glsl">
+precision mediump float;
+varying vec2 v_texturePosition;
+uniform sampler2D texture;
+
+void main() {
+  gl_FragColor = texture2D(texture, v_texturePosition);
+}
+</script>
+<script>
+window.addEventListener('load', async event => { 
+    let video = document.querySelector('video');
+    video.muted = true;
+    video.playsInline = true;
+
+    video.addEventListener('resize', event => {
+        document.querySelectorAll('canvas').forEach(canvas => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        })
+    });
+
+    let src1 = video.appendChild(document.createElement('source'))
+    src1.src = '../../common_assets/media/BipBop.mp4';
+
+    let src2 = video.appendChild(document.createElement('source'))
+    src2.src = '../../common_assets/media/BipBop.webm';
+
+    video.addEventListener('loadedmetadata', event => {
+        startPaintingWithRVFC();
+    })
+
+    video.load();
+
+});
+
+function startPaintingWithRVFC() {
+    let video = document.querySelector('video');
+    let canvas = document.querySelector('#rVFC');
+    var gl = canvas.getContext("webgl");
+
+    gl.clearColor(0, 0, 0, 1);
+
+    let vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, document.getElementById("vertexShaderSource").textContent);
+    gl.compileShader(vertexShader);
+
+    let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, document.getElementById("fragmentShaderSource").textContent);
+    gl.compileShader(fragmentShader);
+
+    let program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    gl.useProgram(program);
+    let textureUniform = gl.getUniformLocation(program, "texture");
+    let positionAttribute = gl.getAttribLocation(program, "a_position");
+    gl.enableVertexAttribArray(positionAttribute);
+
+    let vertices = new Float32Array([-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0]);
+
+    let buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(positionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+    const texture = gl.createTexture();
+
+    let updateTexture = () => { 
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    };
+
+    let paint = () => {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        updateTexture();
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(textureUniform, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        video.requestVideoFrameCallback(paint);
+    };
+    video.requestVideoFrameCallback(paint);
+}
+</script>
+</head>
+<body>
+<div>
+    <div class="inline">
+        <span>Video:</span><br>
+        <video controls></video>
+    </div>
+    <div class="inline">
+        <span>requestVideoFrameCallback + Canvas:</span><br>
+        <canvas id="rVFC"></canvas>
+    </div>
+</div>
+
