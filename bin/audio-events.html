@@ -17,6 +17,7 @@ function logEvent(event) {
 function go() {
     var audio = document.querySelector('audio');
     audio.src = '../common_assets/media/beep.mp3';
+    audio.muted = true;
     audio.load();
 
     audio.addEventListener('loadeddata', logEvent);
@@ -24,6 +25,8 @@ function go() {
     audio.addEventListener('canplay', logEvent);
     audio.addEventListener('canplaythrough', logEvent);
 }
+
+window.addEventListener('load', go);
 </script>
 <body>
     <p>
