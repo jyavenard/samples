@@ -1,0 +1,36 @@
+---
+title: Audio Events
+tags: Audio
+---
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+function logText(html) {
+    let log = document.querySelector('#log');
+    let logLine = log.appendChild(document.createElement('div'));
+    logLine.innerHTML = html;
+}
+
+function logEvent(event) {
+    logText(`<span class="event">EVENT(${event.type})</span>`);
+}
+
+function go() {
+    var audio = document.querySelector('audio');
+    audio.src = '../common_assets/media/beep.mp3';
+    audio.load();
+
+    audio.addEventListener('loadeddata', logEvent);
+    audio.addEventListener('metadataloaded', logEvent);
+    audio.addEventListener('canplay', logEvent);
+    audio.addEventListener('canplaythrough', logEvent);
+}
+</script>
+<body>
+    <p>
+        <button onclick="go()">go</button><br>
+        <audio controls></audio>
+    </p>
+    <p>
+        <div id=log></div>
+    </p>
+</body>
