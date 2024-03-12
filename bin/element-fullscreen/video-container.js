@@ -65,7 +65,7 @@ class VideoContainer extends HTMLElement {
 
         this.shadowRoot.querySelector('.fullscreen').addEventListener('click', event => {
             if (this.shadowRoot.host.requestFullscreen && document.fullscreenElement !== this.shadowRoot.host)
-                this.shadowRoot.host.requestFullscreen();
+                this.shadowRoot.host.requestFullscreen({navigationUI: "hide"});
             else if (document.exitFullscreen && document.fullscreenElement === this.shadowRoot.host)
                 document.exitFullscreen();
             else if (this.#video.webkitDisplayingFullscreen)

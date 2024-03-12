@@ -13,7 +13,7 @@ tags: Fullscreen
     			if (document.fullscreenElement)
     				document.exitFullscreen();
     			else
-    				document.body.requestFullscreen();
+    				document.body.requestFullscreen({navigationUI: "hide"});
     		});
     	})
     </script>
