@@ -11,7 +11,7 @@ tags: PiP Fullscreen
     }
 </style>
 <script>
-    var video;
+    var target;
     window.addEventListener('load', event => {
         document.getElementById('fullscreen').addEventListener('click', event => {
             let target = document.getElementById('target');
@@ -28,12 +28,12 @@ tags: PiP Fullscreen
                 video.requestPictureInPicture();
         });
         document.getElementById('hide').addEventListener('click', event => {
-            if (video.parentElement) {
-                video.parentElement.removeChild(video);
-                document.getElementById('hide').innerText = 'show video';
+            if (target.parentElement) {
+                target.parentElement.removeChild(target);
+                document.getElementById('hide').innerText = 'show target';
             } else {
-                document.getElementById('target').insertAdjacentElement("beforeend", video);
-                document.getElementById('hide').innerText = 'hide video';
+                document.body.insertAdjacentElement("beforeend", target);
+                document.getElementById('hide').innerText = 'hide target';
             }
         });
         document.addEventListener('fullscreenchange', event => {
@@ -49,15 +49,16 @@ tags: PiP Fullscreen
         document.getElementById('video').addEventListener('exitpictureinpicture', event => {
             document.getElementById('pip').innerText = 'enter pip';
         });
-        video = document.getElementById('video');
+        target = document.getElementById('target');
     });
 </script>
 </head>
 <body>
+    <button id="hide">hide target</button>
+    <br />
     <div id=target>
         <button id="fullscreen">enter fullscreen</button>
         <button id="pip">enter pip</button>
-        <button id="hide">hide video</button>
         <br />
         <video id="video" muted>
             <source src="../common_assets/media/BipBop.mp4" type="video/mp4">
