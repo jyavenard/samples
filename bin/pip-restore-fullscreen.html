@@ -46,7 +46,7 @@ tags: PiP Fullscreen
         document.getElementById('video').addEventListener('enterpictureinpicture', event => {
             document.getElementById('pip').innerText = 'exit pip';
         });
-        document.getElementById('video').addEventListener('exitpictureinpicture', event => {
+        document.getElementById('video').addEventListener('leavepictureinpicture', event => {
             document.getElementById('pip').innerText = 'enter pip';
         });
         target = document.getElementById('target');
