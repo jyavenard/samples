@@ -1,0 +1,67 @@
+---
+title: PiP Restore Fullscreen
+tags: PiP Fullscreen
+---
+<style>
+    body { background: green; }
+    #target { 
+        background: white;
+        padding: 1em;
+        display: inline-block;
+    }
+</style>
+<script>
+    var video;
+    window.addEventListener('load', event => {
+        document.getElementById('fullscreen').addEventListener('click', event => {
+            let target = document.getElementById('target');
+            if (document.fullscreenElement === target)
+                document.exitFullscreen();
+            else
+                target.requestFullscreen();
+        });
+        document.getElementById('pip').addEventListener('click', event => {
+            let video = document.getElementById('video');
+            if (document.pictureInPictureElement === video)
+                document.exitPictureInPicture();
+            else
+                video.requestPictureInPicture();
+        });
+        document.getElementById('hide').addEventListener('click', event => {
+            if (video.parentElement) {
+                video.parentElement.removeChild(video);
+                document.getElementById('hide').innerText = 'show video';
+            } else {
+                document.getElementById('target').insertAdjacentElement("beforeend", video);
+                document.getElementById('hide').innerText = 'hide video';
+            }
+        });
+        document.addEventListener('fullscreenchange', event => {
+            let fullscreen = document.getElementById('fullscreen');
+            if (document.fullscreenElement === document.getElementById('target'))
+                fullscreen.innerText = 'exit fullscreen';
+            else
+                fullscreen.innerText = 'enter fullscreen';
+        });
+        document.getElementById('video').addEventListener('enterpictureinpicture', event => {
+            document.getElementById('pip').innerText = 'exit pip';
+        });
+        document.getElementById('video').addEventListener('exitpictureinpicture', event => {
+            document.getElementById('pip').innerText = 'enter pip';
+        });
+        video = document.getElementById('video');
+    });
+</script>
+</head>
+<body>
+    <div id=target>
+        <button id="fullscreen">enter fullscreen</button>
+        <button id="pip">enter pip</button>
+        <button id="hide">hide video</button>
+        <br />
+        <video id="video" muted>
+            <source src="../common_assets/media/BipBop.mp4" type="video/mp4">
+            <source src="../common_assets/media/BipBop.webm" type="video/mp4">
+        </video>
+    </div>
+</body>
