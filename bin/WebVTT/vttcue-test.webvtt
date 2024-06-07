@@ -11,3 +11,9 @@ Test Text
 
 00:00:03.000 --> 00:00:04.000 size:20%
 Test Text
+
+00:00:04.000 --> 00:00:05.000 vertical:rl
+Test Text
+
+00:00:05.000 --> 00:00:06.000 vertical:lr
+Test Text
