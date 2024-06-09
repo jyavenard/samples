@@ -35,3 +35,6 @@ Test Text
 
 00:00:01.100 --> 00:00:01.200 position:10%,line-left align:left size:35%
 Test Text
+
+00:00:01.200 --> 00:00:01.300 vertical:rl
+<ruby>Test<rt>Ruby</rt></ruby> Text
