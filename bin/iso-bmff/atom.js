@@ -1,14 +1,17 @@
 class BitReader {
+    #buffer;
+    #bitPos = 0;
+
     constructor(buffer, offset) {
-        this.buffer = buffer;
-        this.bitPos = offset * 8;
+        this.#buffer = buffer;
+        this.#bitPos = offset * 8;
     }
 
     readOneBit() {
-        var offset = Math.floor(this.bitPos / 8),
-            shift = 7 - this.bitPos % 8;
-        this.bitPos += 1;
-        return (this.buffer[offset] >> shift) & 1;
+        var offset = Math.floor(this.#bitPos / 8),
+            shift = 7 - this.#bitPos % 8;
+        this.#bitPos += 1;
+        return (this.#buffer[offset] >> shift) & 1;
     }
 
     readBits(n) {
@@ -19,8 +22,20 @@ class BitReader {
         return value;
     }
 
+    skipBits(n) {
+        this.#bitPos += n;
+    }
+
+    get bitPos() {
+        return this.#bitPos;
+    }
+
+    get byteLength() {
+        return this.#buffer.byteLength
+    }
+
     isEnd() {
-        return Math.floor(this.bitPos / 8) >= this.buffer.length;
+        return Math.floor(this.#bitPos / 8) >= this.#buffer.length;
     }
 }
 
@@ -1872,7 +1887,7 @@ class ColorBox extends Atom {
             this.colorPrimaries = reader.readUint16();
             this.transferCharacteristics = reader.readUint16();
             this.matrixCoefficients = reader.readUint16();
-            this.fullRangeFlag = reader.readUint8() & 0xF
+            this.fullRangeFlag = (reader.readUint8() & 0x80) === 0x80;
         }
 
         return reader.offset;
@@ -2222,5 +2237,30 @@ class FpsKeyVersionListBox extends Atom {
 
         let dataSize = this.size - headerOffset;
         this.versions = new Uint32Array(buffer, offset + headerOffset, dataSize / 4);
+    }
+}
+
+class MetaBox extends FullBox {
+    static {
+        Atom.constructorMap['meta'] = MetaBox.bind(null);
+    }
+
+    constructor(parent) {
+        super(parent);
+
+        this.description = 'Metadata Box';
+        this.childAtoms = [];
+    }
+
+    parse (buffer, offset) {
+        var headerOffset = super.parse(buffer, offset, this);
+        while (headerOffset < this.size) {
+            var childAtom = Atom.create(buffer, offset + headerOffset, this);
+            if (!childAtom)
+                break;
+            headerOffset += childAtom.size;
+            this.childAtoms.push(childAtom);
+        }
+        return headerOffset;
     }
 }
