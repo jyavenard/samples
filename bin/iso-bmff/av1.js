@@ -84,14 +84,14 @@ BitReader.prototype.readLeb128 = function() {
 };
 
 BitReader.prototype.uvlc = function() {
-    let leadingZeros = 0     
+    let leadingZeros = 0
 
     while ( 1 ) {
         done = this.readOneBit();
-        if ( done )  
+        if ( done )
             break;
-        leadingZeros++   
-    }    
+        leadingZeros++
+    }
 
     if ( leadingZeros >= 32 )
         return ( 1 << 32 ) - 1;
@@ -304,15 +304,118 @@ class OBU {
         COEFF_CDF_Q_CTXS: 4,
         PRIMARY_REF_NONE: 7,
         BUFFER_POOL_MAX_SIZE: 10,
-    }
+    };
+
+    static COLOR_PRIMARIES = {
+        1: { name: "CP_BT_709", description: "BT.709" },
+        2: { name: "CP_UNSPECIFIED", description: "Unspecified" },
+        4: { name: "CP_BT_470_M", description: "BT.470 System M (historical)" },
+        5: { name: "CP_BT_470_B_G", description: "BT.470 System B, G (historical)" },
+        6: { name: "CP_BT_601", description: "BT.601" },
+        7: { name: "CP_SMPTE_240", description: "SMPTE 240" },
+        8: { name: "CP_GENERIC_FILM", description: "Generic film (color filters using illuminant C)" },
+        9: { name: "CP_BT_2020", description: "BT.2020, BT.2100" },
+        10: { name: "CP_XYZ", description: "SMPTE 428 (CIE 1921 XYZ)" },
+        11: { name: "CP_SMPTE_431", description: "SMPTE RP 431-2" },
+        12: { name: "CP_SMPTE_432", description: "SMPTE EG 432-1" },
+        22: { name: "CP_EBU_3213", description: "EBU Tech. 3213-E" },
+        CP_BT_709: 1,
+        CP_UNSPECIFIED: 2,
+        CP_BT_470_M: 4,
+        CP_BT_470_B_G: 5,
+        CP_BT_601: 6,
+        CP_SMPTE_240: 7,
+        CP_GENERIC_FILM: 8,
+        CP_BT_2020: 9,
+        CP_XYZ: 10,
+        CP_SMPTE_431: 11,
+        CP_SMPTE_432: 12,
+        CP_EBU_3213: 22,
+    };
+
+    static TRANSFER_CHARACTERISTICS = {
+        0: { name: "TC_RESERVED_0", description: "For future use" },
+        1: { name: "TC_BT_709", description: "BT.709" },
+        2: { name: "TC_UNSPECIFIED", description: "Unspecified" },
+        3: { name: "TC_RESERVED_3", description: "For future use" },
+        4: { name: "TC_BT_470_M", description: "BT.470 System M (historical)" },
+        5: { name: "TC_BT_470_B_G", description: "BT.470 System B, G (historical)" },
+        6: { name: "TC_BT_601", description: "BT.601" },
+        7: { name: "TC_SMPTE_240", description: "SMPTE 240 M" },
+        8: { name: "TC_LINEAR", description: "Linear" },
+        9: { name: "TC_LOG_100", description: "Logarithmic (100 : 1 range)" },
+        10: { name: "TC_LOG_100_SQRT10", description: "Logarithmic (100 * Sqrt(10) : 1 range)" },
+        11: { name: "TC_IEC_61966", description: "IEC 61966-2-4" },
+        12: { name: "TC_BT_1361", description: "BT.1361" },
+        13: { name: "TC_SRGB", description: "sRGB or sYCC" },
+        14: { name: "TC_BT_2020_10_BIT", description: "BT.2020 10-bit systems" },
+        15: { name: "TC_BT_2020_12_BIT", description: "BT.2020 12-bit systems" },
+        16: { name: "TC_SMPTE_2084", description: "SMPTE ST 2084, ITU BT.2100 PQ" },
+        17: { name: "TC_SMPTE_428", description: "SMPTE ST 428" },
+        18: { name: "TC_HLG", description: "BT.2100 HLG, ARIB STD-B67" },
+        TC_RESERVED_0: 0,
+        TC_BT_709: 1,
+        TC_UNSPECIFIED: 2,
+        TC_RESERVED_3: 3,
+        TC_BT_470_M: 4,
+        TC_BT_470_B_G: 5,
+        TC_BT_601: 6,
+        TC_SMPTE_240: 7,
+        TC_LINEAR: 8,
+        TC_LOG_100: 9,
+        TC_LOG_100_SQRT10: 10,
+        TC_IEC_61966: 11,
+        TC_BT_1361: 12,
+        TC_SRGB: 13,
+        TC_BT_2020_10_BIT: 14,
+        TC_BT_2020_12_BIT: 15,
+        TC_SMPTE_2084: 16,
+        TC_SMPTE_428: 17,
+        TC_HLG: 18,
+    };
+
+    static MATRIX_COEFFICIENTS = {
+        0: { name: "MC_IDENTITY", description: "Identity matrix" },
+        1: { name: "MC_BT_709", description: "BT.709" },
+        2: { name: "MC_UNSPECIFIED", description: "Unspecified" },
+        3: { name: "MC_RESERVED_3", description: "For future use" },
+        4: { name: "MC_FCC", description: "US FCC 73.628" },
+        5: { name: "MC_BT_470_B_G", description: "BT.470 System B, G (historical)" },
+        6: { name: "MC_BT_601", description: "BT.601" },
+        7: { name: "MC_SMPTE_240", description: "SMPTE 240 M" },
+        8: { name: "MC_SMPTE_YCGCO", description: "YCgCo" },
+        9: { name: "MC_BT_2020_NCL", description: "BT.2020 non-constant luminance, BT.2100 YCbCr" },
+        10: { name: "MC_BT_2020_CL", description: "BT.2020 constant luminance" },
+        11: { name: "MC_SMPTE_2085", description: "SMPTE ST 2085 YDzDx" },
+        12: { name: "MC_CHROMAT_NCL", description: "Chromaticity-derived non-constant luminance" },
+        13: { name: "MC_CHROMAT_CL", description: "Chromaticity-derived constant luminance" },
+        14: { name: "MC_ICTCP", description: "BT.2100 ICtCp" },
+        MC_IDENTITY: 0,
+        MC_BT_709: 1,
+        MC_UNSPECIFIED: 2,
+        MC_RESERVED_3: 3,
+        MC_FCC: 4,
+        MC_BT_470_B_G: 5,
+        MC_BT_601: 6,
+        MC_SMPTE_240: 7,
+        MC_SMPTE_YCGCO: 8,
+        MC_BT_2020_NCL: 9,
+        MC_BT_2020_CL: 10,
+        MC_SMPTE_2085: 11,
+        MC_CHROMAT_NCL: 12,
+        MC_CHROMAT_CL: 13,
+        MC_ICTCP: 14,
+    };
 
     static create(buffer) {
         let array = new Uint8Array(buffer, 0, buffer.byteLength);
         let reader = new BitReader(array, 0);
 
         let obu = new OBU();
-
         obu.parse(reader);
+
+        if (obu.obu_type === OBU.TYPES.OBU_SEQUENCE_HEADER)
+            return new SequenceHeaderOBU(obu);
 
         return obu;
     }
@@ -385,100 +488,100 @@ class OBU {
             for ( var i = 0; i <= this.operating_points_cnt_minus_1; i++ ) {
                 this.operating_point_idc.push(reader.readBits(12));
                 this.seq_level_idx.push(reader.readBits(5));
-                if ( this.seq_level_idx[ i ] > 7 ) {  
+                if ( this.seq_level_idx[ i ] > 7 ) {
                     this.seq_tier.push(reader.readBits(1));
-                } else {     
+                } else {
                     this.seq_tier.push(0);
                 }
-                if ( this.decoder_model_info_present_flag ) {     
+                if ( this.decoder_model_info_present_flag ) {
                     this.decoder_model_present_for_this_op.push(reader.readBits(1));
-                    if ( this.decoder_model_present_for_this_op[ i ] ) {  
-                        this.operating_parameters_info(reader, i)   
-                    }    
-                } else {     
+                    if ( this.decoder_model_present_for_this_op[ i ] ) {
+                        this.operating_parameters_info(reader, i)
+                    }
+                } else {
                     this.decoder_model_present_for_this_op.push(0   );
-                }    
-                if ( this.initial_display_delay_present_flag ) {  
+                }
+                if ( this.initial_display_delay_present_flag ) {
                     this.initial_display_delay_present_for_this_op.push(reader.readBits(1));
-                    if ( this.initial_display_delay_present_for_this_op[ i ] ) {  
+                    if ( this.initial_display_delay_present_for_this_op[ i ] ) {
                         this.initial_display_delay_minus_1.push(reader.readBits(4));
                     }
                 }
-            }   
+            }
         }
 
-        let operatingPoint = this.choose_operating_point( )   
-        let OperatingPointIdc = this.operating_point_idc[ operatingPoint ]    
+        let operatingPoint = this.choose_operating_point( )
+        let OperatingPointIdc = this.operating_point_idc[ operatingPoint ]
         this.frame_width_bits_minus_1    = reader.readBits(4);
         this.frame_height_bits_minus_1   = reader.readBits(4);
-        let n = this.frame_width_bits_minus_1 + 1     
+        let n = this.frame_width_bits_minus_1 + 1
         this.max_frame_width_minus_1 = reader.readBits(n);
-        n = this.frame_height_bits_minus_1 + 1    
+        n = this.frame_height_bits_minus_1 + 1
         this.max_frame_height_minus_1    = reader.readBits(n);
-        if ( this.reduced_still_picture_header )  
-            this.frame_id_numbers_present_flag = 0    
-        else     
+        if ( this.reduced_still_picture_header )
+            this.frame_id_numbers_present_flag = 0
+        else
             this.frame_id_numbers_present_flag   = reader.readBits(1);
-        if ( this.frame_id_numbers_present_flag ) {   
+        if ( this.frame_id_numbers_present_flag ) {
             this.delta_frame_id_length_minus_2   = reader.readBits(4);
             this.additional_frame_id_length_minus_1  = reader.readBits(3);
-        }    
+        }
         this.use_128x128_superblock  = reader.readBits(1);
         this.enable_filter_intra = reader.readBits(1);
         this.enable_intra_edge_filter    = reader.readBits(1);
-        if ( this.reduced_still_picture_header ) {    
-            this.enable_interintra_compound = 0   
-            this.enable_masked_compound = 0   
-            this.enable_warped_motion = 0     
-            this.enable_dual_filter = 0   
-            this.enable_order_hint = 0    
-            this.enable_jnt_comp = 0  
-            this.enable_ref_frame_mvs = 0     
-            this.seq_force_screen_content_tools = OBU.CONSTANTS.SELECT_SCREEN_CONTENT_TOOLS     
-            this.seq_force_integer_mv = OBU.CONSTANTS.SELECT_INTEGER_MV     
-            this.OrderHintBits = 0    
-        } else {     
+        if ( this.reduced_still_picture_header ) {
+            this.enable_interintra_compound = 0
+            this.enable_masked_compound = 0
+            this.enable_warped_motion = 0
+            this.enable_dual_filter = 0
+            this.enable_order_hint = 0
+            this.enable_jnt_comp = 0
+            this.enable_ref_frame_mvs = 0
+            this.seq_force_screen_content_tools = OBU.CONSTANTS.SELECT_SCREEN_CONTENT_TOOLS
+            this.seq_force_integer_mv = OBU.CONSTANTS.SELECT_INTEGER_MV
+            this.OrderHintBits = 0
+        } else {
             this.enable_interintra_compound  = reader.readBits(1);
             this.enable_masked_compound  = reader.readBits(1);
             this.enable_warped_motion    = reader.readBits(1);
             this.enable_dual_filter  = reader.readBits(1);
             this.enable_order_hint   = reader.readBits(1);
-            if ( this.enable_order_hint ) {   
+            if ( this.enable_order_hint ) {
                 this.enable_jnt_comp = reader.readBits(1);
                 this.enable_ref_frame_mvs    = reader.readBits(1);
-            } else {     
-                this.enable_jnt_comp = 0  
-                this.enable_ref_frame_mvs = 0     
-            }    
+            } else {
+                this.enable_jnt_comp = 0
+                this.enable_ref_frame_mvs = 0
+            }
             let seq_choose_screen_content_tools = reader.readBits(1);
-            if ( seq_choose_screen_content_tools ) {     
-                this.seq_force_screen_content_tools = OBU.CONSTANTS.SELECT_SCREEN_CONTENT_TOOLS     
-            } else {     
+            if ( seq_choose_screen_content_tools ) {
+                this.seq_force_screen_content_tools = OBU.CONSTANTS.SELECT_SCREEN_CONTENT_TOOLS
+            } else {
                 this.seq_force_screen_content_tools  = reader.readBits(1);
-            }    
-                                                                     
-            if ( this.seq_force_screen_content_tools > 0 ) {  
+            }
+
+            if ( this.seq_force_screen_content_tools > 0 ) {
                 this.seq_choose_integer_mv   = reader.readBits(1);
-                if ( this.seq_choose_integer_mv ) {   
-                    this.seq_force_integer_mv = OBU.CONSTANTS.SELECT_INTEGER_MV     
-                } else {     
+                if ( this.seq_choose_integer_mv ) {
+                    this.seq_force_integer_mv = OBU.CONSTANTS.SELECT_INTEGER_MV
+                } else {
                     this.seq_force_integer_mv    = reader.readBits(1);
-                }    
-            } else {     
-                this.seq_force_integer_mv = OBU.CONSTANTS.SELECT_INTEGER_MV     
-            }    
-            if ( this.enable_order_hint ) {   
+                }
+            } else {
+                this.seq_force_integer_mv = OBU.CONSTANTS.SELECT_INTEGER_MV
+            }
+            if ( this.enable_order_hint ) {
                 this.order_hint_bits_minus_1 = reader.readBits(3);
-                this.OrderHintBits = this.order_hint_bits_minus_1 + 1  
-            } else {     
-                this.OrderHintBits = 0    
-            }    
-        }    
+                this.OrderHintBits = this.order_hint_bits_minus_1 + 1
+            } else {
+                this.OrderHintBits = 0
+            }
+        }
         this.enable_superres = reader.readBits(1);
         this.enable_cdef = reader.readBits(1);
         this.enable_restoration  = reader.readBits(1);
-        this.color_config(reader)  
-        this.film_grain_params_present   = reader.readBits(1);
+        this.color_config(reader)
+        this.film_grain_params_present = reader.readBits(1);
     }
 
     timing_info(reader) {
@@ -506,65 +609,96 @@ class OBU {
 
     color_config(reader) {
         let high_bitdepth   = reader.readBits(1);
-        if ( this.seq_profile == 2 && this.high_bitdepth ) {   
+        if ( this.seq_profile == 2 && this.high_bitdepth ) {
             let twelve_bit  = reader.readBits(1);
-            this.BitDepth = twelve_bit ? 12 : 10  
-        } else if ( this.seq_profile <= 2 ) {     
-            this.BitDepth = high_bitdepth ? 10 : 8    
-        }    
-        if ( this.seq_profile == 1 ) {    
-            this.mono_chrome = 0  
-        } else {     
+            this.BitDepth = twelve_bit ? 12 : 10
+        } else if ( this.seq_profile <= 2 ) {
+            this.BitDepth = high_bitdepth ? 10 : 8
+        }
+        if ( this.seq_profile == 1 ) {
+            this.mono_chrome = 0
+        } else {
             this.mono_chrome = reader.readBits(1);
-        }    
-        this.NumPlanes = this.mono_chrome ? 1 : 3  
+        }
+        this.NumPlanes = this.mono_chrome ? 1 : 3
         let color_description_present_flag  = reader.readBits(1);
-        if ( color_description_present_flag ) {  
+        if ( color_description_present_flag ) {
             this.color_primaries = reader.readBits(8);
             this.transfer_characteristics    = reader.readBits(8);
             this.matrix_coefficients = reader.readBits(8);
-        } else {     
-            this.color_primaries = OBU.CONSTANTS.CP_UNSPECIFIED     
-            this.transfer_characteristics = OBU.CONSTANTS.TC_UNSPECIFIED    
-            this.matrix_coefficients = OBU.CONSTANTS.MC_UNSPECIFIED     
-        }    
-        if ( this.mono_chrome ) {     
+        } else {
+            this.color_primaries = OBU.COLOR_PRIMARIES.CP_UNSPECIFIED
+            this.transfer_characteristics = OBU.TRANSFER_CHARACTERISTICS.TC_UNSPECIFIED
+            this.matrix_coefficients = OBU.MATRIX_COEFFICIENTS.MC_UNSPECIFIED
+        }
+        if ( this.mono_chrome ) {
             this.color_range = reader.readBits(1);
-            this.subsampling_x = 1    
-            this.subsampling_y = 1    
-            this.chroma_sample_position = OBU.CONSTANTS.CSP_UNKNOWN     
-            this.separate_uv_delta_q = 0  
+            this.subsampling_x = 1
+            this.subsampling_y = 1
+            this.chroma_sample_position = OBU.CONSTANTS.CSP_UNKNOWN
+            this.separate_uv_delta_q = 0
             return
-        } else if ( this.color_primaries == OBU.CONSTANTS.CP_BT_709 &&  
-                    this.transfer_characteristics == OBU.CONSTANTS.TC_SRGB &&   
-                    this.matrix_coefficients == OBU.CONSTANTS.MC_IDENTITY ) {   
-            this.color_range = 1  
-            this.subsampling_x = 0    
-            this.subsampling_y = 0    
-        } else {     
+        } else if ( this.color_primaries == OBU.COLOR_PRIMARIES.CP_BT_709 &&
+                    this.transfer_characteristics == OBU.TRANSFER_CHARACTERISTICS.TC_SRGB &&
+                    this.matrix_coefficients == OBU.MATRIX_COEFFICIENTS.MC_IDENTITY ) {
+            this.color_range = 1
+            this.subsampling_x = 0
+            this.subsampling_y = 0
+        } else {
             this.color_range = reader.readBits(1);
-            if ( this.seq_profile == 0 ) {    
-                this.subsampling_x = 1    
-                this.subsampling_y = 1    
-            } else if ( this.seq_profile == 1 ) {     
-                this.subsampling_x = 0    
-                this.subsampling_y = 0    
-            } else {     
-                if ( this.BitDepth == 12 ) {  
+            if ( this.seq_profile == 0 ) {
+                this.subsampling_x = 1
+                this.subsampling_y = 1
+            } else if ( this.seq_profile == 1 ) {
+                this.subsampling_x = 0
+                this.subsampling_y = 0
+            } else {
+                if ( this.BitDepth == 12 ) {
                     this.subsampling_x   = reader.readBits(1);
-                    if ( this.subsampling_x )     
+                    if ( this.subsampling_x )
                         this.subsampling_y   = reader.readBits(1);
-                    else     
-                        this.subsampling_y = 0    
-                } else {     
-                    this.subsampling_x = 1    
-                    this.subsampling_y = 0    
-                }    
-            }    
-            if ( this.subsampling_x && this.subsampling_y ) {  
+                    else
+                        this.subsampling_y = 0
+                } else {
+                    this.subsampling_x = 1
+                    this.subsampling_y = 0
+                }
+            }
+            if ( this.subsampling_x && this.subsampling_y ) {
                 this.chroma_sample_position  = reader.readBits(2);
-            }    
-        }    
+            }
+        }
         this.separate_uv_delta_q = reader.readBits(1);
+    }
+}
+
+class SequenceHeaderOBU {
+    #obu;
+    constructor(obu) {
+        this.#obu = obu;
+
+        function addEnumerableProperty(object, name, getter) {
+            Object.defineProperty(object, name, {
+                get: getter,
+                enumerable: true,
+                configurable: true,
+            });
+        }
+
+        addEnumerableProperty(this, 'type', () => "Sequence Header OBU" );
+        addEnumerableProperty(this, 'size', () => this.#obu.size );
+        addEnumerableProperty(this, 'width', () => this.#obu.max_frame_width_minus_1 + 1 );
+        addEnumerableProperty(this, 'height', () => this.#obu.max_frame_height_minus_1 + 1 );
+        addEnumerableProperty(this, 'bitDepth', () => this.#obu.BitDepth );
+        addEnumerableProperty(this, 'subsampling', () => this.#obu.subsampling_x * 100
+                                                        + this.#obu.subsampling_y * 10
+                                                        + this.#obu.chroma_sample_position );
+        addEnumerableProperty(this, 'colorRange', () => this.#obu.color_range ? 'full' : 'limited' );
+        addEnumerableProperty(this, 'colorPrimaries', () => OBU.COLOR_PRIMARIES[this.#obu.color_primaries]?.name ?? 'None');
+        addEnumerableProperty(this, 'transferCharacteristics', () => OBU.TRANSFER_CHARACTERISTICS[this.#obu.transfer_characteristics]?.name ?? 'None');
+        addEnumerableProperty(this, 'matrixCoefficients', () => OBU.MATRIX_COEFFICIENTS[this.#obu.matrix_coefficients]?.name ?? 'None' );
+
+        addEnumerableProperty(this, 'hasFilmGrain', () => this.#obu.film_grain_params_present ? true : false );
+
     }
 }
