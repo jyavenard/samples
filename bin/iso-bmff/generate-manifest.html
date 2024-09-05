@@ -1,0 +1,114 @@
+---
+title: "ISO-BMFF Atom Parser"
+tags: Video Formats
+---
+<head>
+    <title>GenerateManifest</title>
+    <script src=atom.js></script>
+    <script>
+        // Add Blob.prototype.slice if it does not already exist:
+        if (typeof(Blob.prototype.slice) == 'undefined' && typeof(Blob.prototype.webkitSlice) != 'undefined')
+            Blob.prototype.slice = Blob.prototype.webkitSlice;
+
+        function onFileSelect(e) {
+            atoms = [];
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.addEventListener('load', (e) => { onload(e, file); });
+        }
+
+        function onload(e, file) {
+            var reader = e.target;
+            var offset = 0;
+            while (offset < reader.result.byteLength) {
+                var atom = Atom.create(reader.result, offset);
+                offset += atom.size;
+                atoms.push(atom);
+            }
+
+            var manifest = generateManifest(atoms, file);
+            document.body.appendChild(document.createTextNode(JSON.stringify(manifest)));
+        }
+
+        function generateManifest(atoms, file)
+        {
+            var manifest = new Object;
+            manifest.url = file.name;
+
+            manifest.type = file.type;
+            var codecs = [];
+
+            var moov = atoms.find((atom) => { return atom.type === 'moov'; });
+            if (!moov)
+                return;
+
+            var timeScale = moov.getAtomByType('mdhd').timeScale
+
+            manifest.init = { offset: 0, size: moov.offset + moov.size };
+
+            var stsds = moov.getAtomsByType('stsd');
+            stsds.forEach((stsd) => {
+                stsd.getAtomsByType('avc1').forEach((avc1) => {
+					avc1.getAtomsByType('avcC').forEach((avcC) => {
+						var profile = ('0' + avcC.AVCProfileIndication.toString(16)).substr(-2);
+						var compat = ('0' + avcC.profileCompatibility.toString(16)).substr(-2);
+						var level = ('0' + avcC.AVCLevelIndication.toString(16)).substr(-2);
+						codecs.push(`"avc1.${profile + compat + level}"`);
+					});
+                });
+                stsd.getAtomsByType('hvc1').forEach((hvc1) => {
+                    codecs.push(`"hvc1"`);
+                });
+            });
+
+            if (codecs.length)
+                manifest.type += `; codecs=${ codecs.join(',') }`;
+
+            manifest.media = [];
+            var trex = moov.getAtomsByType('trex')[0];
+
+            atoms.forEach((atom, index) => {
+                if (atom.type !== 'moof')
+                    return;
+
+                var offset = atom.offset;
+                var size = atom.size;
+                var mdat = atoms[index + 1];
+                var timestamp = 0;
+                if (mdat.type === 'mdat')
+                    size += mdat.size;
+                var tfdt = atom.getAtomByType('tfdt');
+                if (tfdt)
+                    timestamp = tfdt.baseMediaDecodeTime / timeScale;
+
+                var defaultSampleDuration = trex.default_sample_duration;
+
+                var tfhd = atom.getAtomByType('tfhd');
+                if (tfhd.defaultSampleDurationPresent)
+                    defaultSampleDuration = tfhd.defaultSampleDuration;
+
+                var totalDuration = 0;
+                var trun = atom.getAtomByType('trun');
+                trun.samples.forEach((sample) => {
+                    if (trun.sampleDurationPresent)
+                        totalDuration += sample.sampleDuration;
+                    else
+                        totalDuration += defaultSampleDuration;
+                });
+                var duration = totalDuration / timeScale;
+
+                manifest.media.push({ offset: offset, size: size, timestamp: timestamp, duration: duration });
+            });
+            return manifest;
+        }
+
+        function setup() {
+            document.getElementById('file').addEventListener('change', onFileSelect, false);
+        }
+    </script>
+</head>
+<body onload="setup()">
+    <input type="file" id="file" name="file" />
+    <div id=output></div>
+</body>
