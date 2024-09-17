@@ -2,8 +2,12 @@
 title: AVSyncTest
 tags: MediaRecorder
 ---
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-    canvas { border: 1px solid red; }
+    canvas, video {
+        border: 1px solid black;
+        max-width: 100%;
+    }
 </style>
 <script>
 function paintVideoFrame(options) {
@@ -330,6 +334,10 @@ window.addEventListener('load', event => {
             writeAudioData(options);
             paintVideoFrame(options);
             track.requestFrame();
+
+            if (options.currentTime.value / options.currentTime.timescale % 10.0 == 0)
+                recorder.requestData();
+
             setTimeout(paintAndIncrement, 1000 * options.frameDuration.value / options.frameDuration.timescale);
         };
 
@@ -378,9 +386,6 @@ window.addEventListener('load', event => {
 });
 </script>
 <body>
-    <br>
-    <canvas width=640 height=480></canvas><video width=640 height=480 controls></video>
-    <br>
     Size: <select id=size>
         <option value=360p>360p</option>
         <option value=480p selected>480p</option>
@@ -392,4 +397,6 @@ window.addEventListener('load', event => {
     <br>
 
     <button id=start>start</button> <button id=stop>stop</button> <a id="download"><button>download</button></a>
+    <br>
+    <canvas width=640 height=480></canvas><video width=640 height=480 controls playsinline></video>
 </body>
