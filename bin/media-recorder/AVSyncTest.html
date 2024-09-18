@@ -40,14 +40,17 @@ window.addEventListener('load', event => {
         },
         audioData: audioData,
     };
+    bipBopWorker.postMessage({type: 'set-options', options: options});
 
-    var shouldStop = true;
     let stream = canvas.captureStream();
     let track = stream.getTracks()[0];
     let recorder = new MediaRecorder(stream, {mimeType: 'video/mp4'});
 
-    var mediaData = new Blob([], {type: 'video/mp4'});
-    var mediaURL = URL.createObjectURL(mediaData)
+    let mediaData = new Blob([], {type: 'video/mp4'});
+    let mediaURL = URL.createObjectURL(mediaData);
+
+    let interval;
+
     recorder.addEventListener('dataavailable', event => {
         URL.revokeObjectURL(mediaURL);
         mediaData = new Blob([mediaData, event.data]);
@@ -67,38 +70,34 @@ window.addEventListener('load', event => {
 
     let start = document.getElementById('start')
     start.addEventListener('click', event => {
-        if (!shouldStop)
+        if (interval)
             return;
-        shouldStop = false;
 
-        writeAudioData(options);
-        paintVideoFrame(canvas, options);
-        recorder.start();
-        track.requestFrame();
+        let intervalDuration = 1000 * options.frameDuration.value / options.frameDuration.timescale;
 
         let paintAndIncrement = () => {
-            if (shouldStop)
-                return;
-            options.currentTime.value += 1;
-            options.endTime.value += 1;
-            writeAudioData(options);
-            paintVideoFrame(canvas, options);
-            track.requestFrame();
-
             if (options.currentTime.value / options.currentTime.timescale % options.segmentDuration == 0)
                 recorder.requestData();
 
-            setTimeout(paintAndIncrement, 1000 * options.frameDuration.value / options.frameDuration.timescale);
+            track.requestFrame();
+
+            options.currentTime.value += 1;
+            options.endTime.value += 1;
+            bipBopWorker.postMessage({type: 'paint-and-increment'});
         };
 
-        setTimeout(paintAndIncrement, 1000 * options.frameDuration.value / options.frameDuration.timescale);
+        recorder.start();
+
+        interval = setInterval(paintAndIncrement, intervalDuration);
+        paintAndIncrement();
     });
 
     let stop = document.getElementById('stop');
     stop.addEventListener('click', event => {
-        if (shouldStop)
+        if (!interval)
             return;
-        shouldStop = true;
+        clearInterval(interval);
+        interval = null;
         recorder.stop();
     });
 
@@ -121,14 +120,12 @@ window.addEventListener('load', event => {
             video.height = canvas.height = 1080;
             break;
         }
-        writeAudioData(options);
-        paintVideoFrame(canvas, options);
+        bipBopWorker.postMessage({type: 'set-options', options: options});
     });
 
     document.getElementById('description').addEventListener('input', event => {
         options.description = event.target.value;
-        writeAudioData(options);
-        paintVideoFrame(canvas, options);
+        bipBopWorker.postMessage({type: 'set-options', options: options});
     });
 
     document.getElementById('segment-duration').addEventListener('change', event => {
@@ -136,10 +133,11 @@ window.addEventListener('load', event => {
         if (Number.isNaN(segmentDuration))
             return;
         options.segmentDuration = segmentDuration;
+        bipBopWorker.postMessage({type: 'set-options', options: options});
     });
 
-    writeAudioData(options);
-    paintVideoFrame(canvas, options);
+    let offscreen = canvas.transferControlToOffscreen();
+    bipBopWorker.postMessage({type: 'set-canvas', canvas: offscreen}, [offscreen]);
 });
 </script>
 <body>
