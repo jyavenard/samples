@@ -1,5 +1,4 @@
-function paintVideoFrame(canvas, options) {
-    let currentTime = options.currentTime;
+function paintVideoFrame(canvas, options, currentTime) {
     let frameDuration = options.frameDuration;
     let description = options.description;
     let colors = options.colors;
@@ -85,12 +84,17 @@ function paintVideoFrame(canvas, options) {
         context.fillStyle = colors.foreground;
         context.fillText(text, textPosition.x, textPosition.y);
 
+        text = `${options.frameDuration.timescale}fps ${width}x${height}`;
+        metrics = context.measureText(text);
+        textPosition.y += (metrics.emHeightAscent + metrics.emHeightDescent);
+        context.fillText(text, textPosition.x, textPosition.y);
+
         let hours = Math.floor(currentTimeInSeconds / (60 * 60)) % 100;
         let minutes = Math.floor(currentTimeInSeconds / 60) % 60;
         let seconds = Math.floor(currentTimeInSeconds) % 60;
         let rem = frameDuration.value % frameDuration.timescale;
         let dropFrames = rem != 0;
-        let frames = Math.floor(currentTimeInSeconds % 1.0 / frameDurationInSeconds);
+        let frames = Math.round(currentTimeInSeconds % 1.0 / frameDurationInSeconds);
         let totalFrames = currentTime.value / frameDuration.value;
 
         context.font = `${height / 12}px "Courier"`;
@@ -203,7 +207,7 @@ function paintVideoFrame(canvas, options) {
     }
 }
 
-function writeAudioData(options)
+function writeAudioData(options, inCurrentTime, inEndTime)
 {
     const kHumFrequency = 125.0;
     const kHumAmplitude = 0;
@@ -214,12 +218,12 @@ function writeAudioData(options)
     const kPi = 3.141592565;
     const kAudioSampleRate = 48000;
     function convertTimescale(time, newScale) {
-        return { value: Math.floor(time.value / time.timescale * newScale), timescale: newScale };
+        return { value: Math.round(time.value / time.timescale * newScale), timescale: newScale };
     }
 
     let audioData = options.audioData;
-    let startTime = convertTimescale(options.currentTime, kAudioSampleRate);
-    let endTime = convertTimescale(options.endTime, kAudioSampleRate);
+    let startTime = convertTimescale(inCurrentTime, kAudioSampleRate);
+    let endTime = convertTimescale(inEndTime, kAudioSampleRate);
     let duration = convertTimescale(options.frameDuration, kAudioSampleRate);
 
     let frequency = kHumFrequency;

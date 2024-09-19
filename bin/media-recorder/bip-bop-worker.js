@@ -3,6 +3,8 @@ importScripts('bip-bop.js');
 var options;
 var canvas;
 var audioData;
+var currentTime;
+var endTime;
 
 function start() {
 }
@@ -21,17 +23,31 @@ function setCanvas(inCanvas) {
 	paint();
 }
 
+function setTime(inCurrentTime, inEndTime) {
+	currentTime = inCurrentTime;
+	endTime = inEndTime;
+	paint();
+}
+
+function setSize(inWidth, inHeight) {
+	canvas.width = inWidth;
+	canvas.height = inHeight;
+	paint();
+}
+
 function paint() {
-	if (!options || !canvas)
+	if (!options || !canvas || !currentTime || !endTime)
 		return;
-    writeAudioData(options);
-    paintVideoFrame(canvas, options);
+    writeAudioData(options, currentTime, endTime);
+    paintVideoFrame(canvas, options, currentTime);
 }
 
 function paintAndIncrement() {
-    options.currentTime.value += 1;
-    options.endTime.value += 1;
+    currentTime.value += 1;
+    endTime.value += 1;
     paint();
+    if (currentTime.value / currentTime.timescale % options.segmentDuration == 0)
+    	postMessage({type: 'segment-duration-reached'});
 }
 
 addEventListener("message", event => {
@@ -41,6 +57,12 @@ addEventListener("message", event => {
 		break;
 	case 'set-canvas':
 		setCanvas(event.data.canvas);
+		break;
+	case 'set-time':
+		setTime(event.data.currentTime, event.data.endTime);
+		break;
+	case 'set-size':
+		setSize(event.data.width, event.data.height);
 		break;
 	case 'start':
 		start();

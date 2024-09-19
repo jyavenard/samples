@@ -18,11 +18,12 @@ window.addEventListener('load', event => {
     let video = document.querySelector('video');
     let download = document.getElementById('download');
     let audioData = new Int16Array(canvas.width * 2);
+    var segmentDurationReached = false;
+    let fps = 24;
+    let startingFrame = 0;
 
     let options = {
-        currentTime: { value: 0, timescale: 24 },
-        endTime: { value: 1, timescale: 24 },
-        frameDuration: { value: 1, timescale: 24 },
+        frameDuration: { value: 1, timescale: fps },
         segmentDuration: 10.0,
         description: "Bip Bop Canvas",
         colors: {
@@ -41,6 +42,7 @@ window.addEventListener('load', event => {
         audioData: audioData,
     };
     bipBopWorker.postMessage({type: 'set-options', options: options});
+    bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
 
     let stream = canvas.captureStream();
     let track = stream.getTracks()[0];
@@ -68,21 +70,20 @@ window.addEventListener('load', event => {
         download.download = 'video.mp4';
     });
 
-    let start = document.getElementById('start')
-    start.addEventListener('click', event => {
+    let start = () => {
         if (interval)
             return;
+
 
         let intervalDuration = 1000 * options.frameDuration.value / options.frameDuration.timescale;
 
         let paintAndIncrement = () => {
-            if (options.currentTime.value / options.currentTime.timescale % options.segmentDuration == 0)
+            if (segmentDurationReached) {
                 recorder.requestData();
+                segmentDurationReached = false;
+            }
 
             track.requestFrame();
-
-            options.currentTime.value += 1;
-            options.endTime.value += 1;
             bipBopWorker.postMessage({type: 'paint-and-increment'});
         };
 
@@ -90,36 +91,58 @@ window.addEventListener('load', event => {
 
         interval = setInterval(paintAndIncrement, intervalDuration);
         paintAndIncrement();
-    });
+        document.getElementById('start').disabled = true;
+        document.getElementById('stop').disabled = false;
+    };
 
-    let stop = document.getElementById('stop');
-    stop.addEventListener('click', event => {
+    let stop = () => {
         if (!interval)
             return;
         clearInterval(interval);
         interval = null;
         recorder.stop();
+        document.getElementById('start').disabled = false;
+        document.getElementById('stop').disabled = true;
+    };
+
+    document.getElementById('start').addEventListener('click', start);
+    document.getElementById('stop').addEventListener('click', stop);
+    document.getElementById('reset').addEventListener('click', event => {
+        stop();
+        bipBopWorker.postMessage({type: 'set-options', options: options});
+        bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
+
+        video.innerHTML = '';
+        video.load();
     });
 
     document.getElementById('size').addEventListener('change', event => {
+        var width = video.width;
+        var height = video.height;
+
         switch (event.target.value) {
         case '360p':
-            video.width = canvas.width = 480;
-            video.height = canvas.height = 360;
+            width = 480;
+            height = 360;
             break;
         case '480p':
-            video.width = canvas.width = 640;
-            video.height = canvas.height = 480;
+            width = 640;
+            height = 480;
             break;
         case '720p':
-            video.width = canvas.width = 1280;
-            video.height = canvas.height = 720;
+            width = 1280;
+            height = 720;
             break;
         case '1080p':
-            video.width = canvas.width = 1920;
-            video.height = canvas.height = 1080;
+            width = 1920;
+            height = 1080;
             break;
+        default:
+            return;
         }
+        video.width = width;
+        video.height = height;
+        bipBopWorker.postMessage({type: 'set-size', width: width, height: height});
         bipBopWorker.postMessage({type: 'set-options', options: options});
     });
 
@@ -136,8 +159,48 @@ window.addEventListener('load', event => {
         bipBopWorker.postMessage({type: 'set-options', options: options});
     });
 
+    document.getElementById('frames-per-second').addEventListener('change', event => {
+        let inFPS = parseInt(event.target.value, 10);
+        if (Number.isNaN(fps))
+            return;
+        fps = inFPS;
+        options.frameDuration = { value: 1, timescale: fps };
+        bipBopWorker.postMessage({type: 'set-options', options: options});
+        if (!interval)
+            bipBopWorker.postMessage({type: 'set-time', currentTime: { value: 0, timescale: fps }, endTime: { value: 1, timescale: fps } });
+    });
+
+    document.getElementById('starting-frame').addEventListener('input', event => {
+        let inStartingFrame = parseInt(event.target.value, 10);
+        if (Number.isNaN(inStartingFrame))
+            return;
+        startingFrame = inStartingFrame;
+        if (!interval)
+            bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
+    });
+
+
+    video.addEventListener('emptied', event => {
+        download.href = '';
+        download.download = 'video.mp4';
+        download.querySelector('button').disabled = true;
+    })
+
+    video.addEventListener('loadedmetadata', event => {
+        download.href = video.currentURL;
+        download.download = 'video.mp4';
+        download.querySelector('button').disabled = false;
+    })
+
     let offscreen = canvas.transferControlToOffscreen();
     bipBopWorker.postMessage({type: 'set-canvas', canvas: offscreen}, [offscreen]);
+    bipBopWorker.addEventListener('message', event => {
+        switch (event.data.type) {
+        case 'segment-duration-reached':
+            segmentDurationReached = true;
+            break;
+        }
+    });
 });
 </script>
 <body>
@@ -159,7 +222,18 @@ window.addEventListener('load', event => {
     </select>
     <br>
 
-    <button id=start>start</button> <button id=stop>stop</button> <a id="download"><button>download</button></a>
+    FPS: <select id=frames-per-second>
+        <option value=15>15 fps</option>
+        <option value=24 selected>24 fps</option>
+        <option value=30>30 fps</option>
+        <option value=60>60 fps</option>
+    </select>
+    <br>
+
+    Starting Frame: <input id=starting-frame type=number value=0>
+    <br>
+
+    <button id=start>start</button> <button id=stop disabled>stop</button> <a id="download"><button disabled=true>download</button></a> <button id=reset>reset</button>
     <br>
     <canvas width=640 height=480></canvas><video width=640 height=480 controls playsinline></video>
 </body>
