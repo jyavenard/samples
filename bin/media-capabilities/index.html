@@ -69,11 +69,17 @@ tags: MediaCapabilities
 		return configuration;
 	}
 
+	function updatePermalinkWithConfiguration(configuration) {
+		let queryValue = encodeURIComponent(JSON.stringify(configuration));
+		document.getElementById('permalink').href = '?configuration=' + queryValue;
+	}
+
 	window.addEventListener('load', async event => {
 		if (window.location.search.startsWith('?configuration=')) {
 			try {
 				let configuration = JSON.parse(decodeURIComponent(window.location.search.substr(15)));
 				setConfiguration(configuration);
+				updatePermalinkWithConfiguration(configuration);
 			} catch { }
 		}
 
@@ -106,9 +112,7 @@ tags: MediaCapabilities
 		});
 
 		document.body.addEventListener('change', event => {
-			let configuration = getConfiguration();
-			let queryValue = encodeURIComponent(JSON.stringify(configuration));
-			document.getElementById('permalink').href = '?configuration=' + queryValue;
+			updatePermalinkWithConfiguration(getConfiguration());
 		});
 
 	});
