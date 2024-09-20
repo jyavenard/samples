@@ -8,7 +8,75 @@ tags: MediaCapabilities
 	input[type=text], input[type=number] { width: 300px; }
 </style>
 <script>
+	function setConfiguration(configuration) {
+		document.querySelector('#decoding-type').value = configuration.type ?? "file";
+		document.querySelector('#enable-audio').checked = !!configuration.audio;
+		document.querySelector('#enable-audio-content-type').checked = !!configuration.audio?.contentType;
+		document.querySelector('#audio-content-type').value = configuration.audio?.contentType ?? "";
+		document.querySelector('#enable-audio-channels').checked = !!configuration.audio?.channels;
+		document.querySelector('#audio-channels').value = configuration.audio?.channels ?? "";
+		document.querySelector('#enable-audio-bitrate').checked = !!configuration.audio?.bitrate;
+		document.querySelector('#audio-bitrate').value = configuration.audio?.bitrate ?? "";
+		document.querySelector('#enable-audio-sample-rate').checked = !!configuration.audio?.samplerate;
+		document.querySelector('#audio-sample-rate').value = configuration.audio?.samplerate ?? "";
+		document.querySelector('#enable-audio-spatial-rendering').checked = !!configuration.audio?.spatialRendering;
+		document.querySelector('#audio-spatial-rendering').checked = configuration.audio?.spatialRendering ?? "";
+		document.querySelector('#enable-video').checked = !!configuration.video;
+		document.querySelector('#enable-video-content-type').checked = !!configuration.video?.contentType;
+		document.querySelector('#video-content-type').value = configuration.video?.contentType ?? "";
+		document.querySelector('#enable-video-width').checked = !!configuration.video?.width;
+		document.querySelector('#video-width').value = configuration.video?.width ?? "";
+		document.querySelector('#enable-video-height').checked = !!configuration.video?.height;
+		document.querySelector('#video-height').value = configuration.video?.height ?? "";
+		document.querySelector('#enable-video-bitrate').checked = !!configuration.video?.bitrate;
+		document.querySelector('#video-bitrate').value = configuration.video?.bitrate ?? "";
+		document.querySelector('#enable-video-framerate').checked = !!configuration.video?.framerate;
+		document.querySelector('#video-framerate').value = configuration.video?.framerate ?? "";
+	}
+
+	function getConfiguration() {
+		let configuration = {};
+		configuration.type = document.querySelector('#decoding-type').value;
+		if (document.querySelector('#enable-audio').checked) {
+			let audioConfiguration = {};
+			if (document.querySelector('#enable-audio-content-type').checked)
+				audioConfiguration.contentType = document.querySelector('#audio-content-type').value;
+			if (document.querySelector('#enable-audio-channels').checked)
+				audioConfiguration.channels = document.querySelector('#audio-channels').value;
+			if (document.querySelector('#enable-audio-bitrate').checked)
+				audioConfiguration.bitrate = document.querySelector('#audio-bitrate').value;
+			if (document.querySelector('#enable-audio-sample-rate').checked)
+				audioConfiguration.samplerate = document.querySelector('#audio-sample-rate').value;
+			if (document.querySelector('#enable-audio-spatial-rendering').checked)
+				audioConfiguration.spatialRendering = document.querySelector('#audio-spatial-rendering').checked;
+			configuration.audio = audioConfiguration;
+		}
+
+		if (document.querySelector('#enable-video').checked) {
+			let videoConfiguration = {};
+			if (document.querySelector('#enable-video-content-type').checked)
+				videoConfiguration.contentType = document.querySelector('#video-content-type').value;
+			if (document.querySelector('#enable-video-width').checked)
+				videoConfiguration.width = document.querySelector('#video-width').value;
+			if (document.querySelector('#enable-video-height').checked)
+				videoConfiguration.height = document.querySelector('#video-height').value;
+			if (document.querySelector('#enable-video-bitrate').checked)
+				videoConfiguration.bitrate = document.querySelector('#video-bitrate').value;
+			if (document.querySelector('#enable-video-framerate').checked)
+				videoConfiguration.framerate = document.querySelector('#video-framerate').value;
+			configuration.video = videoConfiguration;
+		}
+		return configuration;
+	}
+
 	window.addEventListener('load', async event => {
+		if (window.location.search.startsWith('?configuration=')) {
+			try {
+				let configuration = JSON.parse(decodeURIComponent(window.location.search.substr(15)));
+				setConfiguration(configuration);
+			} catch { }
+		}
+
 		for (checkbox of document.querySelectorAll('input[type="checkbox"]')) {
 			let forAttribute = checkbox.getAttribute('for');
 			if (!forAttribute)
@@ -22,39 +90,11 @@ tags: MediaCapabilities
 			});
 		}
 
+
+
 		check.addEventListener('click', async event => {
 			results.innerHTML = '';
-			let configuration = {};
-			configuration.type = document.querySelector('#decoding-type').value;
-			if (document.querySelector('#enable-audio').checked) {
-				let audioConfiguration = {};
-				if (document.querySelector('#enable-audio-content-type').checked)
-					audioConfiguration.contentType = document.querySelector('#audio-content-type').value;
-				if (document.querySelector('#enable-audio-channels').checked)
-					audioConfiguration.channels = document.querySelector('#audio-channels').value;
-				if (document.querySelector('#enable-audio-bitrate').checked)
-					audioConfiguration.bitrate = document.querySelector('#audio-bitrate').value;
-				if (document.querySelector('#enable-audio-sample-rate').checked)
-					audioConfiguration.samplerate = document.querySelector('#audio-sample-rate').value;
-				if (document.querySelector('#enable-audio-spatial-rendering').checked)
-					audioConfiguration.spatialRendering = document.querySelector('#audio-spatial-rendering').checked;
-				configuration.audio = audioConfiguration;
-			}
-
-			if (document.querySelector('#enable-video').checked) {
-				let videoConfiguration = {};
-				if (document.querySelector('#enable-video-content-type').checked)
-					videoConfiguration.contentType = document.querySelector('#video-content-type').value;
-				if (document.querySelector('#enable-video-width').checked)
-					videoConfiguration.width = document.querySelector('#video-width').value;
-				if (document.querySelector('#enable-video-height').checked)
-					videoConfiguration.height = document.querySelector('#video-height').value;
-				if (document.querySelector('#enable-video-bitrate').checked)
-					videoConfiguration.bitrate = document.querySelector('#video-bitrate').value;
-				if (document.querySelector('#enable-video-framerate').checked)
-					videoConfiguration.framerate = document.querySelector('#video-framerate').value;
-				configuration.video = videoConfiguration;
-			}
+			let configuration = getConfiguration();
 
 			try {
 				results.appendChild(document.createElement('div')).innerText = `configuration = ${ JSON.stringify(configuration, null, '\t') }`;
@@ -64,6 +104,13 @@ tags: MediaCapabilities
 				results.appendChild(document.createElement('div')).innerText = `mediaCapabilities.decodingInfo(configuration) failed with exception: ${ e }`;
 			}
 		});
+
+		document.body.addEventListener('change', event => {
+			let configuration = getConfiguration();
+			let queryValue = encodeURIComponent(JSON.stringify(configuration));
+			document.getElementById('permalink').href = '?configuration=' + queryValue;
+		});
+
 	});
 </script>
 </head>
@@ -117,7 +164,7 @@ tags: MediaCapabilities
 			<option value="video/mp4; codecs=hvc1.1.6.L93.B0">HEVC Main Profile, Main Tier, Level 3.1</option>
 			<option value="video/mp4; codecs=av01.0.01M.08">AV1 Main Profile, level 2.1, Main tier, 8-bit</option>
 			<option value="video/mp4; codecs=av01.0.04M.10.0.110.09.16.09.0">AV1 Main Profile, level 3.0, Main tier, 10-bit HDR</option>
-			<option value="video/mp4; codecs=av01.0.19M.10.0.110.09.16.09.0">AV1 Main Profile, level 6.2, Main tier, 10-bit HDR</option>
+			<option value="video/mp4; codecs=av01.0.19M.10.0.110.09.16.09.0">AV1 Main Profile, level 6.3, Main tier, 10-bit HDR</option>
 			<option value="video/webm; codecs=vp09.00.41.08">VP9 profile 0, level 4.1, 8-bit</option>
 			<option value="video/webm; codecs=vp09.02.10.10.01.09.16.09.01">VP9 profile 2, level 1, 10-bit HDR</option>
 		</datalist>
@@ -140,6 +187,6 @@ tags: MediaCapabilities
 	</div>
 
 <div>
-	<button id="check">Check</button>
+	<button id="check">Check</button> <a id="permalink" href="?">Permalink</a>
 	<pre id="results"></pre>
 </div>
