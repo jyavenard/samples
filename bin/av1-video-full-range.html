@@ -1,0 +1,46 @@
+---
+title: AV1 Full vs Limited Range
+tags: Video
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: black; }
+      video {
+        display: block;
+        width: 100%;
+      }
+      .gradient {
+        aspect-ratio: 1920/200;
+        background: linear-gradient(to right, black, white);
+      }
+      .wrapper {
+        position: relative;
+      }
+      .label {
+        position: absolute;
+        color: white;
+        left: 1em;
+        top: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class=wrapper>
+      <span class=label>tv-range</span>
+      <video muted autoplay src="https://cdn.glitch.global/2f4b4e08-395c-470d-aad5-9ba01f7c4597/tv-range.mp4?v=1721587564881"></video>
+    </div>
+    <div class=wrapper>
+      <span class=label>pc-range</span>
+      <video muted autoplay src="https://cdn.glitch.global/2f4b4e08-395c-470d-aad5-9ba01f7c4597/pc-range-2.mp4?v=1721588045703"></video>
+    </div>
+    <div class=wrapper>
+      <span class=label>synthetic gradient</span>
+      <div class="gradient"></div>
+    </div>
+  </body>
+</html>
