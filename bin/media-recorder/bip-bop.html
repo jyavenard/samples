@@ -187,7 +187,7 @@ window.addEventListener('load', event => {
     })
 
     video.addEventListener('loadedmetadata', event => {
-        download.href = video.currentURL;
+        download.href = mediaURL;
         download.download = 'video.mp4';
         download.querySelector('button').disabled = false;
     })
