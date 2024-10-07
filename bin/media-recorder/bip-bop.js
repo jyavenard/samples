@@ -209,25 +209,18 @@ function paintVideoFrame(canvas, options, currentTime) {
 
 function writeAudioData(options, inCurrentTime, inEndTime)
 {
-    const kHumFrequency = 125.0;
-    const kHumAmplitude = 0;
-    const kBipFrequency = 1500.0;
-    const kBipAmplitude = 32768.0;
-    const kBopFrequency = 500.0;
-    const kBopAmplitude = 32768.0;
     const kPi = 3.141592565;
-    const kAudioSampleRate = 48000;
     function convertTimescale(time, newScale) {
         return { value: Math.round(time.value / time.timescale * newScale), timescale: newScale };
     }
 
     let audioData = options.audioData;
-    let startTime = convertTimescale(inCurrentTime, kAudioSampleRate);
-    let endTime = convertTimescale(inEndTime, kAudioSampleRate);
-    let duration = convertTimescale(options.frameDuration, kAudioSampleRate);
+    let startTime = convertTimescale(inCurrentTime, options.sampleRate);
+    let endTime = convertTimescale(inEndTime, options.sampleRate);
+    let duration = convertTimescale(options.frameDuration, options.sampleRate);
 
-    let frequency = kHumFrequency;
-    let amplitude = kHumAmplitude;
+    let frequency = options.humFrequency;
+    let amplitude = options.humAmplitude * 32768.0;
 
     let bipBopPeriod = startTime.timescale * 2;
 
@@ -235,11 +228,11 @@ function writeAudioData(options, inCurrentTime, inEndTime)
     let shouldBop = (startTime.value + startTime.timescale) % bipBopPeriod == 0;
 
     if (shouldBip) {
-        frequency = kBipFrequency;
-        amplitude = kBipAmplitude;
+        frequency = options.bipFrequency;
+        amplitude = options.bipAmplitude * 32768.0;
     } else if (shouldBop) {
-        frequency = kBopFrequency;
-        amplitude = kBopAmplitude;
+        frequency = options.bopFrequency;
+        amplitude = options.bopAmplitude * 32768.0;
     }
 
     let humPeriod = startTime.timescale / frequency;

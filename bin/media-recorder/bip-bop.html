@@ -26,12 +26,13 @@ window.addEventListener('load', event => {
         frameDuration: { value: 1, timescale: fps },
         segmentDuration: 10.0,
         audio: {
+            sampleRate: 48000,
             humFrequency: 125.0,
-            humAmplitude: 0.01,
+            humAmplitude: 0.10,
             bipFrequency: 1500.0,
-            bipAmplitude: 0.10,
+            bipAmplitude: 1.00,
             bopFrequency: 500.0,
-            bopAmplitude: 0.10,
+            bopAmplitude: 1.00,
         },
         description: "Bip Bop Canvas",
         colors: {
@@ -52,7 +53,7 @@ window.addEventListener('load', event => {
     bipBopWorker.postMessage({type: 'set-options', options: options});
     bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
 
-    let audioContext = new AudioContext({sampleRate: 44100});
+    let audioContext = new AudioContext({sampleRate: options.sampleRate});
     audioContext.suspend();
     let destination = audioContext.createMediaStreamDestination();
     let hum = audioContext.createOscillator();
@@ -86,7 +87,7 @@ window.addEventListener('load', event => {
         while (video.firstChild)
             video.removeChild(video.firstChild);
         let source = document.createElement('source');
-        source.type = 'video/mp4';
+        source.type = 'video/mp4; codecs=avc1,mp4a.40.2';
         source.src = mediaURL;
         video.appendChild(source);
         video.load();
@@ -142,6 +143,16 @@ window.addEventListener('load', event => {
 
         video.innerHTML = '';
         video.load();
+    });
+
+    document.getElementById('mime-type').addEventListener('change', event => {
+        let mimeType = event.target.value;
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            document.getElementById('start').disabled = true;
+            return;
+        }
+        document.getElementById('start').disabled = false;
+        recorder = new MediaRecorder(stream, {mimeType: mimeType});
     });
 
     document.getElementById('size').addEventListener('change', event => {
@@ -207,6 +218,11 @@ window.addEventListener('load', event => {
             bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
     });
 
+    document.getElementById('has-hum').addEventListener('change', event => {
+        let hasHum = event.target.checked;
+        humGain.gain.value = options.audio.humAmplitude = hasHum ? 0.1 : 0;
+        bipBopWorker.postMessage({type: 'set-options', options: options});
+    });
 
     video.addEventListener('emptied', event => {
         download.href = '';
@@ -266,6 +282,12 @@ window.addEventListener('load', event => {
 </script>
 <body>
     <br>
+    File type: <select id=mime-type>
+        <option value="video/webm; codecs=vp8,opus">WebM with VP8 and Opus</option>
+        <option value="video/mp4; codecs=avc1,mp4a.40.2" selected>MP4 with H.264 and AAC</option>
+    </select>
+    <br>
+
     Size: <select id=size>
         <option value=360p>360p</option>
         <option value=480p selected>480p</option>
@@ -294,7 +316,11 @@ window.addEventListener('load', event => {
     Starting Frame: <input id=starting-frame type=number value=0>
     <br>
 
+    Hum: <input id=has-hum type=checkbox checked>
+    <br>
+    
     <button id=start>start</button> <button id=stop disabled>stop</button> <a id="download"><button disabled=true>download</button></a> <button id=reset>reset</button>
     <br>
+
     <canvas width=640 height=480></canvas><video width=640 height=480 controls playsinline></video>
 </body>
