@@ -25,6 +25,14 @@ window.addEventListener('load', event => {
     let options = {
         frameDuration: { value: 1, timescale: fps },
         segmentDuration: 10.0,
+        audio: {
+            humFrequency: 125.0,
+            humAmplitude: 0.01,
+            bipFrequency: 1500.0,
+            bipAmplitude: 0.10,
+            bopFrequency: 500.0,
+            bopAmplitude: 0.10,
+        },
         description: "Bip Bop Canvas",
         colors: {
             black:   'black',
@@ -44,8 +52,23 @@ window.addEventListener('load', event => {
     bipBopWorker.postMessage({type: 'set-options', options: options});
     bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
 
+    let audioContext = new AudioContext({sampleRate: 44100});
+    let destination = audioContext.createMediaStreamDestination();
+    let hum = audioContext.createOscillator();
+    let humGain = audioContext.createGain();
+    hum.connect(humGain);
+    hum.frequency = options.audio.humFrequency;
+    humGain.gain.value = options.audio.humAmplitude;
+    humGain.connect(destination);
+    hum.start(0);
+    let bip;
+    let bop;
+
+    let audioTrack = destination.stream.getTracks()[0];
+
     let stream = canvas.captureStream();
-    let track = stream.getTracks()[0];
+    let videoTrack = stream.getTracks()[0];
+    stream.addTrack(audioTrack);
     let recorder = new MediaRecorder(stream, {mimeType: 'video/mp4'});
 
     let mediaData = new Blob([], {type: 'video/mp4'});
@@ -68,6 +91,7 @@ window.addEventListener('load', event => {
 
         download.href = mediaURL;
         download.download = 'video.mp4';
+        download.querySelector('button').disabled = false;
     });
 
     let start = () => {
@@ -83,10 +107,11 @@ window.addEventListener('load', event => {
                 segmentDurationReached = false;
             }
 
-            track.requestFrame();
             bipBopWorker.postMessage({type: 'paint-and-increment'});
+            videoTrack.requestFrame();
         };
 
+        audioContext.resume();
         recorder.start();
 
         interval = setInterval(paintAndIncrement, intervalDuration);
@@ -101,6 +126,7 @@ window.addEventListener('load', event => {
         clearInterval(interval);
         interval = null;
         recorder.stop();
+        audioContext.suspend();
         document.getElementById('start').disabled = false;
         document.getElementById('stop').disabled = true;
     };
@@ -196,9 +222,39 @@ window.addEventListener('load', event => {
     bipBopWorker.postMessage({type: 'set-canvas', canvas: offscreen}, [offscreen]);
     bipBopWorker.addEventListener('message', event => {
         switch (event.data.type) {
-        case 'segment-duration-reached':
-            segmentDurationReached = true;
-            break;
+        case 'painted':
+            if (event.data.options.segmentDurationReached)
+                segmentDurationReached = true;
+
+            if (event.data.options.currentTime.value % options.frameDuration.timescale == 0) {
+                if (bip) {
+                    bip.stop();
+                    bip = null;
+                }
+                bip = audioContext.createOscillator();
+                bip.frequency = options.audio.bipFrequency;
+                let bipGain = audioContext.createGain();
+                bipGain.gain.value = options.audio.bipAmplitude;
+                bip.connect(bipGain);
+                bipGain.connect(destination);
+                bip.start(0);
+                bip.stop(audioContext.currentTime + (options.frameDuration.value / options.frameDuration.timescale));
+            }
+
+            if ((event.data.options.currentTime.value + event.data.options.currentTime.timescale) % options.frameDuration.timescale == 0) {
+                if (bop) {
+                    bop.stop();
+                    bop = null;
+                }
+                bop = audioContext.createOscillator();
+                bop.frequency = options.audio.bopFrequency;
+                let bopGain = audioContext.createGain();
+                bopGain.gain.value = options.audio.bopAmplitude;
+                bop.connect(bopGain);
+                bopGain.connect(destination);
+                bop.start(0);
+                bop.stop(audioContext.currentTime + (options.frameDuration.value / options.frameDuration.timescale));
+            }
         }
     });
 });

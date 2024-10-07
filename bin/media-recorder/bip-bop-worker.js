@@ -43,11 +43,18 @@ function paint() {
 }
 
 function paintAndIncrement() {
+    paint();
+
+    let paintResults = {
+    	currentTime: currentTime,
+    }
+    if (currentTime.value / currentTime.timescale % options.segmentDuration == 0)
+    	paintResults.segmentDurationReached = true;
+
+	postMessage({type: 'painted', options: paintResults});
+
     currentTime.value += 1;
     endTime.value += 1;
-    paint();
-    if (currentTime.value / currentTime.timescale % options.segmentDuration == 0)
-    	postMessage({type: 'segment-duration-reached'});
 }
 
 addEventListener("message", event => {
