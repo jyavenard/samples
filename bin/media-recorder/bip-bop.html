@@ -53,13 +53,15 @@ window.addEventListener('load', event => {
     bipBopWorker.postMessage({type: 'set-time', currentTime: { value: startingFrame, timescale: fps }, endTime: { value: startingFrame + 1, timescale: fps } });
 
     let audioContext = new AudioContext({sampleRate: 44100});
+    audioContext.suspend();
     let destination = audioContext.createMediaStreamDestination();
     let hum = audioContext.createOscillator();
     let humGain = audioContext.createGain();
     hum.connect(humGain);
-    hum.frequency = options.audio.humFrequency;
+    hum.frequency.value = options.audio.humFrequency;
     humGain.gain.value = options.audio.humAmplitude;
     humGain.connect(destination);
+    humGain.connect(audioContext.destination);
     hum.start(0);
     let bip;
     let bop;
@@ -226,32 +228,35 @@ window.addEventListener('load', event => {
             if (event.data.options.segmentDurationReached)
                 segmentDurationReached = true;
 
-            if (event.data.options.currentTime.value % options.frameDuration.timescale == 0) {
+            let bipBopPeriod = options.frameDuration.timescale * 2;
+            if (event.data.options.currentTime.value % bipBopPeriod == 0) {
                 if (bip) {
                     bip.stop();
                     bip = null;
                 }
                 bip = audioContext.createOscillator();
-                bip.frequency = options.audio.bipFrequency;
+                bip.frequency.value = options.audio.bipFrequency;
                 let bipGain = audioContext.createGain();
                 bipGain.gain.value = options.audio.bipAmplitude;
                 bip.connect(bipGain);
                 bipGain.connect(destination);
+                bipGain.connect(audioContext.destination);
                 bip.start(0);
                 bip.stop(audioContext.currentTime + (options.frameDuration.value / options.frameDuration.timescale));
             }
 
-            if ((event.data.options.currentTime.value + event.data.options.currentTime.timescale) % options.frameDuration.timescale == 0) {
+            if ((event.data.options.currentTime.value + event.data.options.currentTime.timescale) % bipBopPeriod == 0) {
                 if (bop) {
                     bop.stop();
                     bop = null;
                 }
                 bop = audioContext.createOscillator();
-                bop.frequency = options.audio.bopFrequency;
+                bop.frequency.value = options.audio.bopFrequency;
                 let bopGain = audioContext.createGain();
                 bopGain.gain.value = options.audio.bopAmplitude;
                 bop.connect(bopGain);
                 bopGain.connect(destination);
+                bopGain.connect(audioContext.destination);
                 bop.start(0);
                 bop.stop(audioContext.currentTime + (options.frameDuration.value / options.frameDuration.timescale));
             }
