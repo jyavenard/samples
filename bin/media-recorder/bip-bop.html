@@ -72,15 +72,15 @@ window.addEventListener('load', event => {
     let stream = canvas.captureStream();
     let videoTrack = stream.getTracks()[0];
     stream.addTrack(audioTrack);
-    let recorder = new MediaRecorder(stream, {mimeType: 'video/mp4'});
-
-    let mediaData = new Blob([], {type: 'video/mp4'});
-    let mediaURL = URL.createObjectURL(mediaData);
+    let recorder;
+    let mediaData;
+    let mediaURL;
 
     let interval;
 
-    recorder.addEventListener('dataavailable', event => {
-        URL.revokeObjectURL(mediaURL);
+    let dataAvailable = event => {
+        if (mediaURL)
+            URL.revokeObjectURL(mediaURL);
         mediaData = new Blob([mediaData, event.data]);
         mediaURL = URL.createObjectURL(mediaData);
 
@@ -95,7 +95,20 @@ window.addEventListener('load', event => {
         download.href = mediaURL;
         download.download = 'video.mp4';
         download.querySelector('button').disabled = false;
-    });
+    }
+
+    let setMimeType = (mimeType) => {
+        if (recorder)
+            recorder.removeEventListener('dataAvailable', dataAvailable);
+
+        recorder = new MediaRecorder(stream, {mimeType: mimeType});
+
+        mediaData = new Blob([], {type: mimeType});
+        mediaURL = URL.createObjectURL(mediaData);
+
+        recorder.addEventListener('dataavailable', dataAvailable);
+    }
+    setMimeType(document.getElementById('mime-type').value);
 
     let start = () => {
         if (interval)
@@ -152,7 +165,7 @@ window.addEventListener('load', event => {
             return;
         }
         document.getElementById('start').disabled = false;
-        recorder = new MediaRecorder(stream, {mimeType: mimeType});
+        setMimeType(mimeType);
     });
 
     document.getElementById('size').addEventListener('change', event => {
