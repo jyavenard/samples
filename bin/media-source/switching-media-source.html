@@ -1,0 +1,80 @@
+---
+title: "Switching MSE Sources"
+tags: Video MSE
+---
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Switching MSE Sources</title>
+	<script src="media-source-loader.js"></script>
+	<script>
+    function waitFor(object, event) {
+    	return new Promise(resolve => {
+    		object.addEventListener(event, resolve, { once: true });
+    	});
+    }
+
+    if (!window.MediaSource)
+        window.MediaSource = window.ManagedMediaSource;
+
+    var sources = [ ];
+
+    async function loadSources() {
+        let loaderOne = new MediaSourceLoader('../../common_assets/media/bipbop-10m-manifest.json', '../../common_assets/media/');
+        await loaderOne.load();
+        sources.push(loaderOne);
+
+        let loaderTwo = new MediaSourceLoader('../../common_assets/media/bipbop-10m-manifest-white.json', '../../common_assets/media/');
+        await loaderTwo.load();
+        sources.push(loaderTwo);
+    }
+
+    async function nextSource() {
+    	let video = document.querySelector('video');
+    	video.src = '';
+    	video.srcObject = null;
+    	video.load();
+
+    	let loader = sources.shift();
+    	sources.push(loader);
+
+        let mediaSource = new MediaSource();
+        video.srcObject = mediaSource;
+        await waitFor(mediaSource, 'sourceopen');
+
+        let sourceBuffer = mediaSource.addSourceBuffer(loader.type);
+        sourceBuffer.appendBuffer(loader.initSegment);
+        await waitFor(sourceBuffer, 'update');
+
+        var i = 0;
+        while (video.duration < 6) {
+	        sourceBuffer.appendBuffer(loader.mediaSegment(i++));
+	        await waitFor(sourceBuffer, 'update');
+        }
+    }
+
+	window.addEventListener('load', async event => {
+        let video = document.querySelector('video');
+        video.controls = true;
+        video.playsInline = true;
+
+        await loadSources();
+        await nextSource();
+
+        let track = video.addTextTrack('metadata');
+        track.mode = 'hidden';
+        let boundaryCue = new VTTCue(5.75, 5.75, "boundary cue");
+        boundaryCue.pauseOnExit = true;
+        track.addCue(boundaryCue);
+
+        boundaryCue.addEventListener('enter', async event => {
+        	await nextSource();
+        	await video.play();
+        });
+	});
+	</script>
+</head>
+<body>
+    <video controls playsinline></video>
+</body>
+</html>
