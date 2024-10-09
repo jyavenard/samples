@@ -11,6 +11,36 @@ tags: MediaRecorder
 </style>
 <script src="bip-bop.js"></script>
 <script>
+var currentRecorder;
+
+function createRecorder(video, stream, mimeType) {
+    let recorder = new MediaRecorder(stream, { mimeType });
+    currentRecorder = recorder;
+
+    let mediaData = new Blob([], {type: 'video/webm'});
+    let mediaURL = URL.createObjectURL(mediaData);
+
+    recorder.addEventListener('dataavailable', event => {
+        URL.revokeObjectURL(mediaURL);
+        mediaData = new Blob([mediaData, event.data]);
+        mediaURL = URL.createObjectURL(mediaData);
+
+        while (video.firstChild)
+            video.removeChild(video.firstChild);
+        let source = document.createElement('source');
+
+        let extension = mimeType.includes("mp4") ? "mp4" : "webm";
+        source.type = `video/${extension}`;
+        source.src = mediaURL;
+        video.appendChild(source);
+        video.load();
+
+        download.href = mediaURL;
+        download.download = `video/${extension}`;
+        download.querySelector('button').disabled = false;
+    });
+}
+
 window.addEventListener('load', event => {
     const bipBopWorker = new Worker("bip-bop-worker.js");
 
@@ -72,32 +102,15 @@ window.addEventListener('load', event => {
     let stream = canvas.captureStream();
     let videoTrack = stream.getTracks()[0];
     stream.addTrack(audioTrack);
-    let recorder = new MediaRecorder(stream, {mimeType: 'video/mp4'});
 
-    let mediaData = new Blob([], {type: 'video/mp4'});
-    let mediaURL = URL.createObjectURL(mediaData);
+    let mimeTypeSelect = document.getElementById( "mime-type" );
+    createRecorder(video, stream, mimeTypeSelect.options[mimeTypeSelect.selectedIndex].value);
 
     let interval;
 
-    recorder.addEventListener('dataavailable', event => {
-        URL.revokeObjectURL(mediaURL);
-        mediaData = new Blob([mediaData, event.data]);
-        mediaURL = URL.createObjectURL(mediaData);
-
-        while (video.firstChild)
-            video.removeChild(video.firstChild);
-        let source = document.createElement('source');
-        source.type = 'video/mp4; codecs=avc1,mp4a.40.2';
-        source.src = mediaURL;
-        video.appendChild(source);
-        video.load();
-
-        download.href = mediaURL;
-        download.download = 'video.mp4';
-        download.querySelector('button').disabled = false;
-    });
-
     let start = () => {
+        let recorder = currentRecorder;
+
         if (interval)
             return;
 
@@ -128,7 +141,7 @@ window.addEventListener('load', event => {
             return;
         clearInterval(interval);
         interval = null;
-        recorder.stop();
+        currentRecorder.stop();
         audioContext.suspend();
         document.getElementById('start').disabled = false;
         document.getElementById('stop').disabled = true;
@@ -152,7 +165,7 @@ window.addEventListener('load', event => {
             return;
         }
         document.getElementById('start').disabled = false;
-        recorder = new MediaRecorder(stream, {mimeType: mimeType});
+        createRecorder(video, currentRecorder.stream, mimeType);
     });
 
     document.getElementById('size').addEventListener('change', event => {
@@ -232,7 +245,7 @@ window.addEventListener('load', event => {
 
     video.addEventListener('loadedmetadata', event => {
         download.href = video.currentSrc;
-        download.download = 'video.mp4';
+        download.download = 'video.webm';
         download.querySelector('button').disabled = false;
     })
 
@@ -283,8 +296,9 @@ window.addEventListener('load', event => {
 <body>
     <br>
     File type: <select id=mime-type>
-        <option value="video/webm; codecs=vp8,opus">WebM with VP8 and Opus</option>
-        <option value="video/mp4; codecs=avc1,mp4a.40.2" selected>MP4 with H.264 and AAC</option>
+        <option value="video/webm; codecs=vp8,opus" selected>WebM with VP8 and Opus</option>
+        <option value="video/webm; codecs=vp9,opus" selected>WebM with VP9 and Opus</option>
+        <option value="video/mp4; codecs=avc1,mp4a.40.2">MP4 with H.264 and AAC</option>
     </select>
     <br>
 
