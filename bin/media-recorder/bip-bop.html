@@ -240,13 +240,11 @@ window.addEventListener('load', event => {
 
     video.addEventListener('emptied', event => {
         download.href = '';
-        download.download = 'video.mp4';
         download.querySelector('button').disabled = true;
     })
 
     video.addEventListener('loadedmetadata', event => {
         download.href = video.currentSrc;
-        download.download = 'video.mp4';
         download.querySelector('button').disabled = false;
     })
 
