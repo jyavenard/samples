@@ -87,13 +87,14 @@ window.addEventListener('load', event => {
         while (video.firstChild)
             video.removeChild(video.firstChild);
         let source = document.createElement('source');
-        source.type = 'video/mp4; codecs=avc1,mp4a.40.2';
+        source.type = event.data.type;
         source.src = mediaURL;
         video.appendChild(source);
         video.load();
 
         download.href = mediaURL;
-        download.download = 'video.mp4';
+        let extension = event.data.type.includes("mp4") ? "mp4" : "webm";
+        download.download = `video.${extension}`
         download.querySelector('button').disabled = false;
     }
 
@@ -297,6 +298,7 @@ window.addEventListener('load', event => {
     <br>
     File type: <select id=mime-type>
         <option value="video/webm; codecs=vp8,opus">WebM with VP8 and Opus</option>
+        <option value="video/webm; codecs=vp09.00,opus">WebM with VP9 and Opus</option>
         <option value="video/mp4; codecs=avc1,mp4a.40.2" selected>MP4 with H.264 and AAC</option>
     </select>
     <br>
